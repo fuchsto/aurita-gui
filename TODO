@@ -1,0 +1,50 @@
+
+- Implement <fieldset>
+- Implement <optgroup>
+
+- Fixme: Setting values only works after all elements have been added 
+         (values won't be set for elements added after form.values=)
+
+- Implement XPath1.0 method (parent, sibling, descendant, following ...)
+
+- Implement field visibility using 
+  field.visible = true/false, wrapped in 
+  def form.fields=(fields)
+    @element_map.each_pair { |fieldname, element|
+      unless fields.include?(fieldname) 
+        @element_map[fieldname].visible = false
+      end
+    }
+  end
+
+= DONE =============================================
+
+- Element should implement / delegate to Array, 
+  so it can be used like any container. 
+
+- Implement element.sibling[:dom_id] --> element
+
+- Provide markaby-like syntax, Example: 
+
+    HTML.div 'content here' :class => :highlight
+
+  and
+    
+    HTML.build { 
+      div.header { 
+        h1 'header'
+      }
+    }
+
+- Decorate required fields. 
+  Required fields are always rendered. 
+ 
+  field = Text_Field.new(:required => true)
+  field.required = true | false
+
+- Hide fields (render as hidden input field)
+
+  field = Text_Field.new(:hidden => true)
+  field.hidden = true
+  field.hide
+  field.show

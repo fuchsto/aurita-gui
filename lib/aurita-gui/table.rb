@@ -53,8 +53,8 @@ module GUI
       @column_css_classes   = params[:column_css_classes]
       @column_css_classes ||= []
       @column_css_classes   = [ @column_css_classes ] unless @column_css_classes.is_a?(Array)
-      params[:cellpadding] = 0 unless params[:cellpadding]
-      params[:cellspacing] = 0 unless params[:cellspacing]
+      params[:cellpadding]  = 0 unless params[:cellpadding]
+      params[:cellspacing]  = 0 unless params[:cellspacing]
       params.delete(:headers)
       params.delete(:num_columns)
       params.delete(:row_css_classes)
@@ -63,8 +63,9 @@ module GUI
       super(params, &block)
     end
 
-    def headers=(headers)
+    def headers=(*headers)
       @headers = headers
+      @headers = headers.first if headers.is_a?(Array)
       if @headers.length > 0 then
         @headers.map! { |cell| 
           if cell.is_a? Element then 
@@ -76,6 +77,13 @@ module GUI
       end
     end
     alias set_headers headers=
+
+    def column_css_classes=(*classes)
+      @column_css_classes = classes
+      @column_css_classes.flatten! 
+   #  touch()
+    end
+    alias set_column_css_classes column_css_classes=
 
     def add_row(*row_data)
       if row_data.first.is_a?(Array) then
@@ -114,13 +122,17 @@ module GUI
       }
     end
 
+    # Returns cell at given column and row (like x, y coordinates)
     def cell(column, row)
       rows[row][column]
     end
 
+    # Returns Table_Row instance at given row index in table. 
     def [](row_index)
       rows[row_index]
     end
+
+    # Sets Table_Row instance at given row index in table. 
     def []=(row_index, row_data)
       rows[row_index] = row_data
     end
@@ -169,7 +181,7 @@ module GUI
     end
 
     def string
-      if @touched then
+      if touched? then
         @cells = []
         @cell_data.each { |cell|
           @cells << @cell_class.new(cell, :parent => self, :column_index => column_index)
@@ -205,14 +217,14 @@ module GUI
   #
   #   cell = my_table[row][column]
   #   cell.content = 'New cell content'
-  #   cell.class = 'table_cell_css_class'
+  #   cell.class   = 'table_cell_css_class'
   #
   class Table_Cell < Element
 
     attr_accessor :value, :presentation_class, :parent
 
     def initialize(cell_element, params={})
-      params[:tag]        = :td
+      params[:tag]          = :td
       @content            ||= cell_element
       @value              ||= cell_element
       @presentation_class ||= false

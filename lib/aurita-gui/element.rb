@@ -241,7 +241,8 @@ module GUI
     def touch
       @touched = true
       @string  = nil
-      @parent.touch() if @parent
+      # Don't re-touch! Parent could have been caller!
+      @parent.touch() if (@parent && !@parent.touched?) 
     end
     alias touch! touch
     def touched? 

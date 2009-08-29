@@ -203,7 +203,7 @@ module GUI
         @content = params[:content] unless @content
       end
 # DON'T EVER USE @content.string UNLESS FOR RENDERING!!
-#     @content   = nil if @content.to_s.length == 0
+#     @content   = nil if @content.to_s.length == 0    # <--- NOOOOooo!
 # instead, do: 
       @content   = nil if !@content.is_a?(Element) && ((@content.respond_to?(:length) && @content.length == 0))
       @content   = [ @content ] unless (@content.kind_of? Array or @content.nil?)

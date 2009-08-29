@@ -44,6 +44,7 @@ module GUI
                                            :class => :minute_select, 
                                            :value => @minute, :options => options)
       end
+      @minute_element
     end
     def second_element
       if !@second_element then
@@ -58,7 +59,7 @@ module GUI
 
     def element
       select_fields = []
-      @time_format.scan(/./).each { |c|
+      @time_format.to_s.split('').each { |c|
         case c
         when 'h' then
           select_fields << hour_element() 

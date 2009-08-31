@@ -41,16 +41,18 @@ describe Aurita::GUI::Form, "basic rendering" do
 <form method="POST" enctype="multipart/form-data">
   <ul class="form_fields">
     <li>
-      <legend>First fieldset</legend>
-      <ul class="form_fields fieldset">
-        <li class="input_field_wrap form_field" id="first_input_field_wrap">
-          <input type="text" value="42" name="first_input_field" id="first_input_field" />
-        </li>
+      <fieldset>
+        <legend>First fieldset</legend>
+        <ul class="form_fields fieldset">
+          <li class="input_field_wrap form_field" id="first_input_field_wrap">
+            <input type="text" value="42" name="first_input_field" id="first_input_field" />
+          </li>
 
-        <li class="input_field_wrap form_field" id="second_input_field_wrap">
-          <input type="text" name="second_input_field" id="second_input_field" />
-        </li>
-      </ul>
+          <li class="input_field_wrap form_field" id="second_input_field_wrap">
+            <input type="text" name="second_input_field" id="second_input_field" />
+          </li>
+        </ul>
+      </fieldset>
 
     </li>
 
@@ -80,14 +82,16 @@ END
 <form method="POST" enctype="multipart/form-data">
   <ul class="form_fields">
     <li>
-      <ul class="form_fields fieldset">
-        <li class="text_field_wrap form_field" id="first_wrap">
-          <input type="text" value="1" name="first" id="first" />
-        </li>
-        <li class="text_field_wrap form_field" id="third_wrap">
-          <input type="text" value="3" name="third" id="third" />
-        </li>
-      </ul>
+      <fieldset>
+        <ul class="form_fields fieldset">
+          <li class="text_field_wrap form_field" id="first_wrap">
+            <input type="text" value="1" name="first" id="first" />
+          </li>
+          <li class="text_field_wrap form_field" id="third_wrap">
+            <input type="text" value="3" name="third" id="third" />
+          </li>
+        </ul>
+      </fieldset>
     </li>
     <li class="text_field_wrap form_field" id="second_wrap">
       <input type="text" value="2" name="second" id="second" />
@@ -103,11 +107,13 @@ END
 <form method="POST" enctype="multipart/form-data">
   <ul class="form_fields">
     <li>
-      <ul class="form_fields fieldset">
-        <li class="text_field_wrap form_field" id="third_wrap">
-          <input type="text" value="3" name="third" id="third" />
-        </li>
-      </ul>
+      <fieldset>
+        <ul class="form_fields fieldset">
+          <li class="text_field_wrap form_field" id="third_wrap">
+            <input type="text" value="3" name="third" id="third" />
+          </li>
+        </ul>
+      </fieldset>
     </li>
     <li class="text_field_wrap form_field" id="second_wrap">
       <input type="text" value="2" name="second" id="second" />

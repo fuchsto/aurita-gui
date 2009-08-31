@@ -25,4 +25,22 @@ describe Aurita::GUI::Form, "basic rendering" do
     @form.to_s.should == '<form method="POST" enctype="multipart/form-data"><ul class="form_fields"><li class="input_field_wrap form_field" id="textfield_wrap"><input type="text" name="textfield" id="textfield" /></li></ul></form>'
   end
 
+  it "should provide reordering of form fields" do
+    form     = Form.new
+
+    text_1   = Text_Field.new(:name => :first, :value => 1)
+    checkbox = Checkbox_Field.new(:name => :second, :options => { 'foo' => 1, 'bar' => 2 } )
+
+    form.add(text_1)
+    form.add(checkbox)
+
+    form.fields = [ 'first' ]
+
+    puts form.to_s.gsub('><', ">\n<")
+  end
+
+  it "should provide disabling form fields for rendering" do
+
+  end
+
 end

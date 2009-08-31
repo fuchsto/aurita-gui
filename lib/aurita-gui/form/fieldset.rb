@@ -70,7 +70,7 @@ module GUI
     end
 
     def fields=(attrib_array)
-      @fields = attrib_array
+      @fields = attrib_array.map { |f| f.to_s }
       touch()
     end
 
@@ -87,7 +87,7 @@ module GUI
     end
     # Set all form elements to editable mode. 
     def editable! 
-      elements.each { |e|
+      @elements.each { |e|
         e.editable! 
       }
       touch()
@@ -101,14 +101,18 @@ module GUI
       return @content if (@content && !@touched)
 
       @content = fields().map { |field|
-        @field_decorator.new(@element_map[field.to_s])
+        element = @element_map[field.to_s]
+        STDERR.puts "What the? #{field.inspect}" unless element
+        @field_decorator.new(element) if element
       }
 
       @content = @content_decorator.new() { @content } 
       @content.add_css_class(:fieldset)
 
       if @legend then
-        @content = [ @legend ] + @content 
+        @content = HTML.fieldset { @legend + @content }
+      else 
+        @content = HTML.fieldset { @content} 
       end
 
       return @content

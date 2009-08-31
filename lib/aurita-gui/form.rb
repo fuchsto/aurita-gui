@@ -420,7 +420,7 @@ module GUI
         form_field_element.content_decorator = @content_decorator
         @element_map.update(form_field_element.element_map)
         @elements  << form_field_element
-        @fieldsets[form_field_element.name] = form_field_element
+        @fieldsets[form_field_element.name.to_s] = form_field_element
       else
         field_name = form_field_element.name.to_s
         form_field_element.value = @values[field_name] unless form_field_element.value.to_s != ''
@@ -445,13 +445,20 @@ module GUI
     def fields=(attrib_array)
       touch()
       @custom_fields = true
-      @fields = attrib_array.map { |field| field.to_s }
+      @fields = attrib_array.map { |field| 
+        (field.is_a?(Hash))? field : field.to_s 
+      }
       attrib_array.each { |attrib|
         if attrib.is_a?(Hash) then
           attrib.each_pair { |fieldset_name, fieldset_fields|
+            legend = false
+            if fieldset_fields.is_a?(Hash) then
+              legend = fieldset_fields[:legend]
+              fieldset_fields = fieldset_fields[:fields]
+            end
             # This is a configuration for a fieldset. 
             # There are two cases: 
-            fieldset = @fieldsets[fieldset_name]
+            fieldset = @fieldsets[fieldset_name.to_s]
             if fieldset then 
               # - The fieldset already has been added to this form. 
               #   In this case, just pass field settings along to 
@@ -462,9 +469,10 @@ module GUI
               #   In this case, we expect that at least the given 
               #   form fields are present in this form, and we 
               #   implicitly create a Fieldset instance here. 
-              fieldset = Fieldset.new(:name => fieldset_name)
+              fieldset = Fieldset.new(:name => fieldset_name, :legend => legend)
               fieldset_fields.each { |field|
-                fieldset.add(@element_map[field.to_s])
+                existing_field = @element_map[field.to_s]
+                fieldset.add(existing_field) if existing_field
               }
               fieldset.fields = fieldset_fields
               add(fieldset)
@@ -545,7 +553,7 @@ module GUI
           # This is a fieldset
           field.each_pair { |fieldset_name, fieldset_fields|
             # Get Fieldset instance by name from @element_map: 
-            @content << HTML.li { @fieldsets[fieldset_name] }
+            @content << HTML.li { @fieldsets[fieldset_name.to_s] }
           }
         else 
           element = @element_map[field.to_s]

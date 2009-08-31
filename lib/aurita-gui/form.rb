@@ -42,7 +42,7 @@ module GUI
   # To use your own implementation as defaut, overload Form.initialize 
   # like
   #
-  #   class My_Form < Aurita::GUI::Form
+  #   class My_Form < Aurita::GUI::For
   #     def initialize(params={}, &block)
   #       super(params, &block)
   #       @field_decorator = My_Field_Decorator
@@ -313,7 +313,29 @@ module GUI
   #
   class Form < Element
 
-    attr_accessor :fields, :elements, :element_map, :values, :field_decorator, :content_decorator
+    # Array of form field names ordered by appearance in the form. 
+    # It is used to determine which fields to render, and in which 
+    # order. 
+    attr_accessor :fields
+    
+    # Array of Form_Field instances includes in this form. 
+    attr_accessor :elements
+    
+    # Hash mapping field names to Form_Field instances. 
+    attr_accessor :element_map
+    
+    # Hash mapping form field names to their values. 
+    attr_accessor :values 
+    
+    # Field decorator class to use for decorating single fields. 
+    attr_accessor :field_decorator 
+    
+    # Decorator class to use for decorating the form content. 
+    attr_accessor :content_decorator
+
+    # Array of fieldsets in this form, ordered by appearance in 
+    # the form. 
+    attr_reader :fieldsets
   
     def initialize(params={}, &block)
       @fields        = params[:fields]
@@ -321,6 +343,7 @@ module GUI
       @fields      ||= []
       @elements      = []
       @element_map   = {}
+      @fieldsets     = {}
       @values      ||= {}
       @title         = false
       @custom_fields = false
@@ -351,6 +374,7 @@ module GUI
     # parameter is of type Numeric, by name otherwhise)
     def [](index)
       return @elements[index] if index.kind_of? Numeric
+      return @element_map[index] if @element_map[index] 
       return @element_map[index.to_s] 
     end
 
@@ -391,13 +415,21 @@ module GUI
     # with same field name. 
     def add(form_field_element)
       touch()
-      field_name = form_field_element.name.to_s
-      form_field_element.value = @values[field_name] unless form_field_element.value.to_s != ''
-      if !form_field_element.dom_id then
-        form_field_element.dom_id = field_name.gsub('.','_')
+      if form_field_element.is_a?(Fieldset) then
+        form_field_element.field_decorator   = @field_decorator
+        form_field_element.content_decorator = @content_decorator
+        @element_map.update(form_field_element.element_map)
+        @elements  << form_field_element
+        @fieldsets[form_field_element.name] = form_field_element
+      else
+        field_name = form_field_element.name.to_s
+        form_field_element.value = @values[field_name] unless form_field_element.value.to_s != ''
+        if !form_field_element.dom_id then
+          form_field_element.dom_id = field_name.gsub('.','_')
+        end
+        @element_map[field_name] = form_field_element
+        @elements << form_field_element
       end
-      @element_map[field_name] = form_field_element
-      @elements << form_field_element
       @content = false # Invalidate
     end
 
@@ -413,10 +445,42 @@ module GUI
     def fields=(attrib_array)
       touch()
       @custom_fields = true
-      @fields = attrib_array.flatten.collect { |fieldname| fieldname.to_s }
-      @elements.each { |field|
-        @element_map[field.name.to_s] = field
+      @fields = attrib_array
+      attrib_array.each { |attrib|
+        if attrib.is_a?(Hash) then
+          attrib.each_pair { |fieldset_name, fieldset_fields|
+            # This is a configuration for a fieldset. 
+            # There are two cases: 
+            fieldset = @fieldsets[fieldset_name]
+            if fieldset then 
+              # - The fieldset already has been added to this form. 
+              #   In this case, just pass field settings along to 
+              #   the fieldset. 
+              fieldset.fields = fieldset_fields
+            else
+              # - There is no fieldset with given name in this form. 
+              #   In this case, we expect that at least the given 
+              #   form fields are present in this form, and we 
+              #   implicitly create a Fieldset instance here. 
+              fieldset = Fieldset.new(:name => fieldset_name)
+              fieldset_fields.each { |field|
+                fieldset.add(@element_map[field.to_s])
+              }
+              fieldset.fields = fieldset_fields
+              add(fieldset)
+            end
+          }
+        end
       }
+      @elements.each { |field|
+        if field.is_a?(Form_Field) then
+          # Update element map only if referenced eleemnt is a 
+          # Form_Field, do not include Fieldset elements. 
+          @element_map[field.name.to_s] = field 
+        elsif field.is_a?(Fieldset) then
+        end
+      }
+      @content = false # Invalidate
     end
     alias set_field_config fields=
 
@@ -436,21 +500,18 @@ module GUI
     end
     alias set_values values=
 
-    # Set all elements to readonly rendering mode. 
-    def readonly!
-      touch()
-      @elements.each { |e|
-        e.readonly!
-      }
-    end
-
     # Return array of field names currently 
     # available for rendering. 
     def fields()
       if !@custom_fields || @fields.length == 0 then
         @elements.each { |field|
-          @fields << field.name.to_s
-          @element_map[field.name.to_s] = field
+          if field.is_a?(Form_Field) then
+            @fields << field.name
+            @element_map[field.name.to_s] = field
+          elsif field.is_a?(Fieldset) then
+            @fields << { field.name => field.fields }
+            @element_map.update(field.element_map)
+          end
         }
       end
       @fields.uniq!
@@ -475,19 +536,26 @@ module GUI
     # Return underlying HTML element instance (HTML.ul), 
     # without wrapping HTML.form element. 
     def content
-      # TODO: Provide Fieldset instances
       @content = []
       if @title then
         @content << HTML.h1(:class => :form_title) { @title }
       end
       fields().each { |field|
-        element = @element_map[field.to_s]
-        if element then
-           element = element.to_hidden_field() if element.hidden?
-          if element.kind_of? Aurita::GUI::Hidden_Field then
-            @content << element
-          else
-            @content << @field_decorator.new(element)
+        if field.is_a?(Hash) then
+          # This is a fieldset
+          field.each_pair { |fieldset_name, fieldset_fields|
+            # Get Fieldset instance by name from @element_map: 
+            @content << HTML.li { @fieldsets[fieldset_name] }
+          }
+        else 
+          element = @element_map[field.to_s]
+          if element then
+             element = element.to_hidden_field() if element.hidden?
+            if element.kind_of? Aurita::GUI::Hidden_Field then
+              @content << element
+            else
+              @content << @field_decorator.new(element)
+            end
           end
         end
       }

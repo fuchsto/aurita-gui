@@ -10,7 +10,7 @@ describe Aurita::GUI::Form, "basic rendering" do
     @text_field = Input_Field.new(:name => :textfield)
   end
 
-  it "should probvide method #add to add form fields" do
+  it "should provide method #add to add form fields" do
     @form.add(@text_field)
   end
 

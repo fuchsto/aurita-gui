@@ -222,6 +222,10 @@ module GUI
       super(@content)
     end
 
+    def inspect
+      "#{self.class.to_s}: <#{@tag}>, #{@attrib.inspect} { #{@content.inspect} }"
+    end
+
     # To definitely tell if a class is 
     # anyhow derived from Element, use 
     # 

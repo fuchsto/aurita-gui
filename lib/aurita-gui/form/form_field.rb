@@ -131,13 +131,6 @@ module GUI
       super(params)
     end
 
-=begin
-    def form=(form_instance)
-      @form = form_instance
-      @params[:parent] = @form
-    end
-=end
-
     # Virtual method. 
     def element
       raise Form_Error.new('Form_Field@element not set') unless @element

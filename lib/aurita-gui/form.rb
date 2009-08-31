@@ -445,7 +445,7 @@ module GUI
     def fields=(attrib_array)
       touch()
       @custom_fields = true
-      @fields = attrib_array
+      @fields = attrib_array.map { |field| field.to_s }
       attrib_array.each { |attrib|
         if attrib.is_a?(Hash) then
           attrib.each_pair { |fieldset_name, fieldset_fields|

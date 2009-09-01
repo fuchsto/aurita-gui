@@ -124,4 +124,25 @@ END
     form.to_s.gsub("\n",'').gsub(/>\s*</,'><').should == expected.gsub("\n",'').gsub(/>\s*</,'><')
   end
 
+  it "should provide access to fields in a fieldset by name" do
+    form = Form.new()
+
+    first  = Text_Field.new(:name => :first,  :value => 1)
+    second = Text_Field.new(:name => :second, :value => 2)
+    third  = Text_Field.new(:name => :third,  :value => 3)
+
+    form.add(first)
+    form.add(second)
+    form.add(third)
+
+    form.fields = [ { :the_legend => [ :first, :third ] }, :second ]
+    
+    form[:first].should == first
+    form['first'].should == first
+    form[:second].should == second
+    form['second'].should == second
+    form[:third].should == third
+    form['third'].should == third
+  end
+
 end

@@ -62,11 +62,16 @@ module GUI
     end
 
     def add(field_element)
-      @elements << field_element
+      if !has_field?(field_element.name) then
+        @elements << field_element
+        @fields   << field_element.name.to_s
+      end
       @element_map[field_element.name.to_s] = field_element
-      @fields   << field_element.name
-
       touch()
+    end
+
+    def []=(index, form_field)
+      @element_map[index.to_s] = form_field
     end
 
     def fields=(attrib_array)
@@ -93,6 +98,10 @@ module GUI
       touch()
     end
 
+    def has_field?(field_name)
+      fields().include?(field_name.to_s)
+    end
+
     def length
       @elements.length
     end
@@ -102,7 +111,7 @@ module GUI
 
       @content = fields().map { |field|
         element = @element_map[field.to_s]
-        STDERR.puts "What the? #{field.inspect}" unless element
+        STDERR.puts "Missing element to field #{field.inspect} in fieldset #{@name}" unless element
         @field_decorator.new(element) if element
       }
 

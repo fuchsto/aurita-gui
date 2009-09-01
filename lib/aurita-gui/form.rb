@@ -379,16 +379,23 @@ module GUI
     end
 
     # Assign / overwrite field element with index form_index. 
-    # TODO: FIX ME
     def []=(index, form_field)
       @content = false # Invalidate
       if !index.kind_of? Numeric
-        @element_map[index.to_s] = form_field 
+        delegated_to_fieldset = false
+        @fieldsets.values.each { |fieldset|
+          if fieldset.has_field?(index) then
+            fieldset[index] = form_field
+            delegated_to_fieldset = true
+          end
+        }
+        
+        @element_map[index.to_s] = form_field unless delegated_to_fieldset
         @elements.collect { |e|
           e = form_field if e.name.to_s == index.to_s
         }
       else 
-        @elements[index] = form_field
+        @elements[index] = form_field 
       end
     end
     
@@ -427,8 +434,15 @@ module GUI
         if !form_field_element.dom_id then
           form_field_element.dom_id = field_name.gsub('.','_')
         end
-        @element_map[field_name] = form_field_element
-        @elements << form_field_element
+        delegated_to_fieldset = false
+        @fieldsets.values.each { |fieldset|
+          if fieldset.has_field?(field_name) then
+            fieldset.add(form_field_element)
+            delegated_to_fieldset = true
+          end
+        }
+        @element_map[field_name] = form_field_element unless delegated_to_fieldset
+        @elements    << form_field_element
       end
       @content = false # Invalidate
     end
@@ -482,7 +496,7 @@ module GUI
       }
       @elements.each { |field|
         if field.is_a?(Form_Field) then
-          # Update element map only if referenced eleemnt is a 
+          # Update element map only if referenced element is a 
           # Form_Field, do not include Fieldset elements. 
           @element_map[field.name.to_s] = field 
         elsif field.is_a?(Fieldset) then
@@ -548,17 +562,24 @@ module GUI
       if @title then
         @content << HTML.h1(:class => :form_title) { @title }
       end
+      included_fields = []
       fields().each { |field|
         if field.is_a?(Hash) then
           # This is a fieldset
           field.each_pair { |fieldset_name, fieldset_fields|
-            # Get Fieldset instance by name from @element_map: 
+            # Get Fieldset instance by name from @fieldsets: 
             @content << HTML.li { @fieldsets[fieldset_name.to_s] }
+            if fieldset_fields.is_a?(Hash) then
+              included_fields += fieldset_fields[:fields]
+            else
+              included_fields += fieldset_fields
+            end
           }
         else 
           element = @element_map[field.to_s]
           if element then
-             element = element.to_hidden_field() if element.hidden?
+            included_fields << element.name.to_s
+            element = element.to_hidden_field() if element.hidden?
             if element.kind_of? Aurita::GUI::Hidden_Field then
               @content << element
             else
@@ -567,10 +588,11 @@ module GUI
           end
         end
       }
+      included_fields = included_fields.map { |f| f.to_s }
       # Render required field as hidden field if not 
       # included in form field config: 
       @elements.each { |element| 
-        if !fields.include?(element.name.to_s) && element.required? then
+        if !included_fields.include?(element.name.to_s) && element.required? then
           @content << element.to_hidden_field()
         end
       }

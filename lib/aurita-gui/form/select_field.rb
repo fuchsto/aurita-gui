@@ -24,7 +24,7 @@ module GUI
     end
     def readonly_element
       HTML.div(@attrib) { 
-        options()[@value]
+        options()[@value] if @value
       }
     end
   end

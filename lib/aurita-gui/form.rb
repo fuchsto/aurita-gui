@@ -462,6 +462,14 @@ module GUI
       @fields = attrib_array.map { |field| 
         (field.is_a?(Hash))? field : field.to_s 
       }
+      # Delegate fields to fieldsets first
+      @fieldsets.each_pair { |name,fieldset|
+        fieldset_fields = []
+        @fields.delete_if { |field|
+          (fieldset.has_field?(field))? (fieldset_fields << field.to_s; true) : false
+        }
+        fieldset.fields = fieldset_fields
+      }
       attrib_array.each { |attrib|
         if attrib.is_a?(Hash) then
           attrib.each_pair { |fieldset_name, fieldset_fields|
@@ -549,10 +557,16 @@ module GUI
     #
     def delete_field(field_name)
       if field_name.kind_of? Numeric then
-        @fields.delete_at(field_name)
+        index = field_name
+        field = @fields.at(index)
+        @elements[field.name.to_s] = nil
+        @fields.delete_at(index)
       else
+        field = @element_map[field_name.to_s]
         @fields.delete(field_name.to_s)
+        @elements.delete(field)
       end
+      @element_map[field.name.to_s] = nil
     end
 
     # Return underlying HTML element instance (HTML.ul), 

@@ -4,7 +4,7 @@ require('aurita-gui/form')
 
 include Aurita::GUI
 
-describe Aurita::GUI::Form, "basic rendering" do
+describe Aurita::GUI::Fieldset, "basic rendering" do
   before do
     @form = Form.new()
     @first_input_field  = Input_Field.new(:name => :first_input_field, :value => 42) 
@@ -143,6 +143,20 @@ END
     form['second'].should == second
     form[:third].should == third
     form['third'].should == third
+  end
+
+  it "should allow setting form field configuration as array" do
+    puts '=============================================='
+    form = Form.new()
+
+    first  = Text_Field.new(:name => :first,  :value => 1)
+    second = Text_Field.new(:name => :second, :value => 2)
+    third  = Text_Field.new(:name => :third,  :value => 3)
+
+    fieldset = Fieldset.new(:name => :the_fieldset, :legend => :the_legend) { first + second + third }
+    form.add(fieldset)
+    form.fields = :first, :second
+    puts form.string.gsub('><',">\n<")
   end
 
 end

@@ -632,10 +632,10 @@ module GUI
 
   end
 
-  class PseudoElement < Element
+  class Pseudo_Element < Element
     def initialize(params={}, &block)
       params[:tag] = :pseudo
-      super()
+      super(params)
     end
   end
   

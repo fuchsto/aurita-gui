@@ -210,7 +210,7 @@ module GUI
 
     def readonly_element
       opt = options()
-      return HTML.div(@attrib) { opt[@value] } if (opt && @value.to_s != '' && opt[@value])
+      return HTML.div(@attrib) { opt[@value.to_s] } if (opt && @value.to_s != '' && opt[@value.to_s])
       return HTML.div(@attrib) { @value } 
     end
 

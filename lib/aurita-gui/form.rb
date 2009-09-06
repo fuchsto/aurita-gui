@@ -653,6 +653,22 @@ module GUI
       }
     end
 
+    # Set given fields to readonly. 
+    # Example: 
+    #
+    #   form.set_readonly(:timestamp_changed, :timestamp_created
+    #
+    # Same as
+    #
+    #   form[:timestamp_changed].readonly!
+    #   form[:timestamp_created].readonly!
+    #  
+    def set_readonly(*field_names)
+      field_names.each { |field|
+        @element_map[field.to_s].readonly!
+      }
+    end
+
   end
 
 end

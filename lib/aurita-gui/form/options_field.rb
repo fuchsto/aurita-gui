@@ -111,6 +111,8 @@ module GUI
       @option_labels   ||= []
       @option_values     = params[:option_values]
       @option_values   ||= []
+      @option_values     = [ @option_values ] unless @option_values.is_a?(Array)
+      @option_labels     = [ @option_labels ] unless @option_labels.is_a?(Array)
       @value             = params[:value]
 
       set_options(params[:options]) if params[:options]
@@ -131,7 +133,8 @@ module GUI
     end
 
     def options
-      @option_labels = @option_values.dup unless @option_labels.length > 0
+    # @option_labels = @option_values.map { |v| v.to_s } unless @option_labels.length > 0
+      @option_labels = @option_values.map { |v| '' } unless @option_labels.length > 0
       @option_labels.fields = @option_values.map { |v| v.to_s } 
       @option_labels
     end

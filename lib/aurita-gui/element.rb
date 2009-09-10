@@ -493,6 +493,21 @@ module GUI
     alias to_str string
     alias to_string string
       
+    # Recursively collects script code ( = js_initialize for Widgets) 
+    # from children, including own. 
+    def script
+      scr = @script.to_s
+      @content.each { |c|
+        c_script  = c.script
+      # puts "#{c.dom_id} #{c.class} : #{c_script}"
+        scr << c_script
+      }
+      scr
+    end
+
+    def js_initialize
+      ''
+    end
 
     # Return CSS classes as array. Note that 
     # Element#class is not redefined to return 

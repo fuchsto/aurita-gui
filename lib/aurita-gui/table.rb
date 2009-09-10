@@ -101,6 +101,10 @@ module GUI
       }
     end
 
+    def <<(row)
+      add_row(*row)
+    end
+
     def string
       t = []
       if @headers.length > 0 then
@@ -147,7 +151,16 @@ module GUI
     
     attr_accessor :cells, :parent
 
-    def initialize(cell_data, params={})
+    def initialize(*args, &block)
+
+      if block_given? then
+        cell_data = yield
+        params    = args[0]
+        params  ||= {}
+      else
+        cell_data = args[0]
+        params    = args[1]
+      end
       params[:tag]  = :tr
 
       @parent     ||= params[:parent]

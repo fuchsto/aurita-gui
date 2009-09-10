@@ -104,8 +104,6 @@ module GUI
 
   end
 
-  # Extend class Aurita::GUI::Form by helper 
-  # methods. 
   class Form
     include Form_Field_Helper
   end

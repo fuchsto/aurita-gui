@@ -405,6 +405,28 @@ module GUI
       @element_map.delete(field_name.to_s)
     end
 
+    # Remove field with name=field_name from 
+    # list of elements to be rendered in the form. 
+    # The element will not be deleted from the form, 
+    # so it can be enabled again using 
+    #
+    #   form.fields << :field_name
+    #
+    def delete_field(field_name)
+      if field_name.kind_of? Numeric then
+        index = field_name
+        field = @fields.at(index)
+        @elements[field.name.to_s] = nil
+        @fields.delete_at(index)
+      else
+        field = @element_map[field_name.to_s]
+        @fields.delete(field_name.to_s)
+        @elements.delete(field)
+      end
+      @element_map.delete(field.name.to_s)
+    end
+
+
     # Iterate over form field elements. 
     # This would add a CSS class to all elements without 
     # a value: 
@@ -546,27 +568,6 @@ module GUI
       end
       @fields.uniq!
       return @fields
-    end
-
-    # Remove field with name=field_name from 
-    # list of elements to be rendered in the form. 
-    # The element will not be deleted from the form, 
-    # so it can be enabled again using 
-    #
-    #   form.fields << :field_name
-    #
-    def delete_field(field_name)
-      if field_name.kind_of? Numeric then
-        index = field_name
-        field = @fields.at(index)
-        @elements[field.name.to_s] = nil
-        @fields.delete_at(index)
-      else
-        field = @element_map[field_name.to_s]
-        @fields.delete(field_name.to_s)
-        @elements.delete(field)
-      end
-      @element_map[field.name.to_s] = nil
     end
 
     # Return underlying HTML element instance (HTML.ul), 

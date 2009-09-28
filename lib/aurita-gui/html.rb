@@ -313,12 +313,20 @@ module GUI
       HTML.build { arg }
     end
 
+    # Renders text non-wrapping by replacing whitespaces by 
+    # &amp;nbsp; entities. 
+    def self.nowrap(&block)
+      t = yield
+      t.gsub!(/\s/,'&nbsp;')
+      t
+    end
+
 =begin
     XHTML_TAGS = [ :html, :div, :p, :input, :select, :option, :ul, :ol, :li ]
     for t in XHTML_TAGS do 
       meth = <<EOC
-        def self.#{t.to_s}(attribs=nil, &block)
-          render(:#{t.to_s}, attribs, &block)
+        def self.#{t.to_s}(*attribs, &block)
+          render(:#{t.to_s}, *attribs, &block)
         end
 EOC
       class_eval(meth)

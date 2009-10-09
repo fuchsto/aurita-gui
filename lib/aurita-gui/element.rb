@@ -498,9 +498,11 @@ module GUI
     def script
       scr = @script.to_s
       @content.each { |c|
-        c_script  = c.script
-      # puts "#{c.dom_id} #{c.class} : #{c_script}"
-        scr << c_script
+        if c.respond_to?(:script) then
+          c_script  = c.script
+        # puts "#{c.dom_id} #{c.class} : #{c_script}"
+          scr << c_script
+        end
       }
       scr
     end

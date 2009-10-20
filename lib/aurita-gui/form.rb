@@ -464,7 +464,7 @@ module GUI
           end
         }
         @element_map[field_name] = form_field_element unless delegated_to_fieldset
-        @elements    << form_field_element
+        @elements << form_field_element
       end
       @content = false # Invalidate
     end

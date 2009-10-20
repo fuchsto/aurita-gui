@@ -610,6 +610,11 @@ module GUI
       code
     end
 
+    # To avoid memory leak
+    def flatten
+      self
+    end
+
   end # class
 
   class Buffered_Element < Element

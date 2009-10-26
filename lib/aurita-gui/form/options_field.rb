@@ -133,8 +133,7 @@ module GUI
     end
 
     def options
-    # @option_labels = @option_values.map { |v| v.to_s } unless @option_labels.length > 0
-      @option_labels = @option_values.map { |v| '' } unless @option_labels.length > 0
+      @option_labels        = @option_values.map { |v| '' } unless @option_labels.length > 0
       @option_labels.fields = @option_values.map { |v| v.to_s } 
       @option_labels
     end

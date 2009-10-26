@@ -12,16 +12,16 @@ module GUI
     def option_elements
       elements = []
       options().each_pair { |k,v|
-        box_attribs = { :type => :checkbox, 
+        element = []
+        box_attribs = { :type  => :checkbox, 
                         :value => k, 
-                        :name => @attrib[:name] }
+                        :name  => @attrib[:name] }
         if @value.is_a?(Array) then
-          checked = (@value.map { |v| v.to_s }.include?(k))? true : nil
+          checked = (@value.map { |x| x.to_s }.include?(k.to_s))? true : nil
         else
           checked = (@value && k.to_s == @value.to_s)? true : nil
         end
         box_attribs[:checked] = checked
-        element = []
         element << HTML.input(box_attribs) 
         element << HTML.label(:for => option_id) { v } if v
         elements << element

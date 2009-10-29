@@ -306,6 +306,11 @@ module GUI
     end
     alias add_child << 
     alias add_content << 
+    alias append <<
+
+    def prepend(other)
+      set_content(other + get_content)
+    end
 
     # Returns [ self ], so concatenation with 
     # Arrays and other Element instances works 
@@ -608,6 +613,11 @@ module GUI
         code << e.js_initialize if e.respond_to?(:js_initialize)
       }
       code
+    end
+
+    # To avoid memory leak
+    def flatten
+      self
     end
 
   end # class

@@ -41,7 +41,8 @@ module GUI
       params[:tag]   = :table
       @headers     ||= params[:headers]
       @num_columns ||= params[:num_columns]
-      @num_columns ||= @headers.length if (!@columns && @headers)
+      @num_columns ||= @headers.length if @headers.is_a?(Array)
+      @num_columns ||= 1
       @columns     ||= []
       @rows        ||= []
       @headers     ||= []
@@ -156,11 +157,11 @@ module GUI
       if block_given? then
         cell_data = yield
         params    = args[0]
-        params  ||= {}
       else
         cell_data = args[0]
         params    = args[1]
       end
+      params  ||= {}
       params[:tag]  = :tr
 
       @parent     ||= params[:parent]
@@ -178,7 +179,7 @@ module GUI
       @content = @cells
 
       super(params)
-      add_css_classes(@parent.row_css_classes) if @parent.row_css_classes.length > 0
+      add_css_classes(@parent.row_css_classes) if @parent && @parent.row_css_classes.length > 0
     end
 
     def table
@@ -245,7 +246,7 @@ module GUI
       @parent             ||= params[:parent]
       params.delete(:column_index)
       super(params)
-      column_css_classes = @parent.parent.column_css_classes[@column_index]
+      column_css_classes = @parent.parent.column_css_classes[@column_index] if @parent.parent
       add_css_classes(column_css_classes) if column_css_classes
     end
 

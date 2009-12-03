@@ -1,5 +1,6 @@
 
 require('delegate')
+require('aurita-gui/sanitize')
 
 module Aurita
 module GUI
@@ -173,6 +174,7 @@ module GUI
     end
 
     def initialize(*args, &block) 
+    # {{{
 
       case args[0]
       when Hash 
@@ -202,10 +204,16 @@ module GUI
       else
         @content = params[:content] unless @content
       end
-# DON'T EVER USE @content.string UNLESS FOR RENDERING!!
-#     @content   = nil if @content.to_s.length == 0    # <--- NOOOOooo!
-# instead, do: 
-      @content   = nil if !@content.is_a?(Element) && ((@content.respond_to?(:length) && @content.length == 0))
+
+# DON'T EVER USE @content.string UNLESS FOR RENDERING!
+#     @content = nil if @content.to_s.length == 0    # <--- NOOOOooo!
+# instead, test for an empty string like this: 
+      if !@content.is_a?(Element) && 
+         @content.respond_to?(:length) && 
+         @content.length == 0 then
+        @content   = nil 
+      end
+
       @content   = [ @content ] unless (@content.kind_of? Array or @content.nil?)
       @content ||= []
 
@@ -247,7 +255,8 @@ module GUI
       @string  = nil
       # Don't re-touch! Parent could have been caller!
       @parent.touch() if (@parent && !@parent.touched?) 
-    end
+    end # }}}
+
     alias touch! touch
     def touched? 
       (@touched == true)
@@ -267,6 +276,7 @@ module GUI
       @attrib[:id] = value if @attrib
     end
     alias dom_id= id=
+
     # Alias definition for #dom_id()
     def id
       @attrib[:id] if @attrib
@@ -480,7 +490,7 @@ module GUI
       if @force_closing_tag || has_content? then
 # Compatible to ruby 1.9 but SLOW: 
         tmp = __getobj__
-        tmp = tmp.map { |e| e.to_s; e }.join('') if tmp.is_a?(Array)
+        tmp = tmp.map { |e| e.sanitized! }.join('') if tmp.is_a?(Array)
 #       return "<#{@tag}#{attrib_string}>#{tmp}</#{@tag}>"
 #
 # Ruby 1.8 only: 
@@ -617,6 +627,29 @@ module GUI
 
     # To avoid memory leak
     def flatten
+      self
+    end
+
+    # Element instances always are sane, as 
+    # they are encoding non-sanitized content 
+    # automatically when being rendered to a 
+    # String. 
+    #
+    def sanitized?
+      true
+    end
+
+    # Just returns self as Element instances 
+    # always are sane. 
+    #
+    def sanitized
+      self
+    end
+
+    # Just returns self as Element instances 
+    # always are sane. 
+    #
+    def sanitize! 
       self
     end
 

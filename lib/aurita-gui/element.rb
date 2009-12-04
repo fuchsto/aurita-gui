@@ -451,13 +451,14 @@ module GUI
     # Static helper definition for clearing 
     # CSS floats. 
     def clear_floating
-      '<div style="clear: both;" />'
+      '<div style="clear: both;" />'.sanitized
     end
 
     # Render this element to a string. 
     def string
 
       return @string if @string
+
       if @tag == :pseudo then
         @string = get_content
         if @string.is_a?(Array) then
@@ -465,7 +466,7 @@ module GUI
         else 
           @string = @string.to_s
         end
-        return @string
+        return @string.sanitized
       end
 
       @@render_count += 1
@@ -490,18 +491,18 @@ module GUI
       if @force_closing_tag || has_content? then
 # Compatible to ruby 1.9 but SLOW: 
         tmp = __getobj__
-        tmp = tmp.map { |e| e.sanitized! }.join('') if tmp.is_a?(Array)
+        tmp = tmp.map { |e| e.to_s; e }.join('') if tmp.is_a?(Array)
 #       return "<#{@tag}#{attrib_string}>#{tmp}</#{@tag}>"
 #
 # Ruby 1.8 only: 
 #       inner = __getobj__.to_s
         @string = "<#{@tag}#{attrib_string}>#{tmp}</#{@tag}>"
         untouch()
-        return @string
+        return @string.sanitized
       else
         untouch()
         @string = "<#{@tag}#{attrib_string} />" 
-        return @string
+        return @string.sanitized
       end
     end
     alias to_s string

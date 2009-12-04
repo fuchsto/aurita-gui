@@ -573,6 +573,10 @@ module GUI
     # Return underlying HTML element instance (HTML.ul), 
     # without wrapping HTML.form element. 
     def content
+  
+    # TODO: Find out if @content can be cached here. 
+    # return @content if @content
+
       @content = []
       if @title then
         @content << HTML.h1(:class => :form_title) { @title }
@@ -614,6 +618,13 @@ module GUI
       fields_id = dom_id().to_s+'_fields' if dom_id()
       @content = @content_decorator.new(:id => fields_id) { @content }
       return @content
+    end
+    alias build content
+
+    def rebuild
+      @content = false
+      touch()
+      build()
     end
 
     # Render this form to an HTML.form instance. 

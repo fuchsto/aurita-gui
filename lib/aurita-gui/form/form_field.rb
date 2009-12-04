@@ -133,7 +133,7 @@ module GUI
 
     # Virtual method. 
     def element
-      raise Form_Error.new('Form_Field@element not set') unless @element
+      raise Form_Error.new('Form_Field@element not set for ' << self.inspect) unless @element
       @element
     end
 
@@ -157,8 +157,8 @@ module GUI
 
     # Render this form field element to string. 
     def to_s
-      return element().string unless @readonly
-      return readonly_element().string
+      return element().to_s unless @readonly
+      return readonly_element().to_s
     end
     alias string to_s
 

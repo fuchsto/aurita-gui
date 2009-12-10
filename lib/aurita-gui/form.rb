@@ -444,13 +444,13 @@ module GUI
     # with same field name. 
     def add(form_field_element)
       touch()
-      if form_field_element.is_a?(Fieldset) then
+      if form_field_element.kind_of?(Fieldset) then
         form_field_element.field_decorator   = @field_decorator
         form_field_element.content_decorator = @content_decorator
         @element_map.update(form_field_element.element_map)
         @elements  << form_field_element
         @fieldsets[form_field_element.name.to_s] = form_field_element
-      else
+      elsif form_field_element.kind_of?(Form_Field) then
         field_name = form_field_element.name.to_s
         form_field_element.value = @values[field_name] unless form_field_element.value.to_s != ''
         if !form_field_element.dom_id then
@@ -465,6 +465,8 @@ module GUI
         }
         @element_map[field_name] = form_field_element unless delegated_to_fieldset
         @elements    << form_field_element
+      else
+        raise ArgumentError.new("Only instances of Aurita::GUI::Fieldset or Aurita::GUI::Form_Field can be added to a form (Given: #{form_field_element.inspect} ")
       end
       @content = false # Invalidate
     end
@@ -679,6 +681,14 @@ module GUI
       field_names.each { |field|
         @element_map[field.to_s].readonly!
       }
+    end
+
+    # Returns javascript init code collected from all elements. 
+    #
+    def script
+      @elements.map { |e|
+        e.script if e.respond_to?(:script)
+      }.join("")
     end
 
   end

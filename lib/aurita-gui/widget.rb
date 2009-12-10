@@ -60,14 +60,18 @@ module GUI
     def js_initialize
       ''
     end
+    def js_finalize
+      ''
+    end
 
-    # Recursively collects js_initialize code from 
-    # children, including own. 
+    # Recursively collects js_initialize and js_finalize 
+    # code from children, wrapped by including own. 
     def script
       scr = js_initialize 
       __getobj__.each { |c| 
         scr << c.script if c.respond_to?(:script)
       }
+      scr << js_finalize
       scr
     end
 

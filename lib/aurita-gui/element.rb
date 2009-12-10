@@ -2,6 +2,14 @@
 require('delegate')
 require('aurita-gui/sanitize')
 
+class Array
+
+  def script
+    map { |e| e.script if e.respond_to?(:script) }.join('')
+  end
+
+end
+
 module Aurita
 module GUI
     
@@ -512,7 +520,8 @@ module GUI
     # Recursively collects script code ( = js_initialize for Widgets) 
     # from children, including own. 
     def script
-      scr = @script.to_s
+      scr = ''
+      scr << js_initialize()
       @content.each { |c|
         if c.respond_to?(:script) then
           c_script  = c.script
@@ -520,10 +529,19 @@ module GUI
           scr << c_script
         end
       }
+      scr << js_finalize()
       scr
     end
 
+    # Javascript code to be called before javascript 
+    # code of child elements. 
     def js_initialize
+      ''
+    end
+
+    # Javascript code to be called after javascript 
+    # code of child elements. 
+    def js_finalize
       ''
     end
 
@@ -617,15 +635,6 @@ module GUI
       }
     end
     
-    def js_init_code()
-      code = js_initialize() if self.respond_to?(:js_initialize)
-      code ||= ''
-      recurse { |e|
-        code << e.js_initialize if e.respond_to?(:js_initialize)
-      }
-      code
-    end
-
     # To avoid memory leak
     def flatten
       self

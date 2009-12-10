@@ -133,6 +133,14 @@ module GUI
     alias to_s string
     alias to_str string
 
+    # Returns javascript init code collected from all elements. 
+    #
+    def script
+      @elements.map { |e|
+        e.script if e.respond_to?(:script)
+      }.join("")
+    end
+
   end
   
 end

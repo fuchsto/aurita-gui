@@ -14,11 +14,11 @@ describe(Aurita::GUI::Element) do
     box2 = Box.new(:id => :box_2, :opened => false) 
     box3 = Box.new(:id => :box_3, :opened => false)
 
-    HTML.div { box1 + box2 }.script.should == "alert('box_1 opened'); alert('box_2 closed'); "
+    HTML.div { box1 + box2 }.script.should == "alert('box_1 opened'); \nalert('box_2 closed'); \n"
 
     outer = HTML.p(:id => :outer) { HTML.div(:id => :inner) { box1 } + box2 + HTML.div { box3 } } 
     
-    outer.script.should == "alert('box_1 opened'); alert('box_2 closed'); alert('box_3 closed'); "
+    outer.script.should == "alert('box_1 opened'); \nalert('box_2 closed'); \nalert('box_3 closed'); \n"
 
   end
 

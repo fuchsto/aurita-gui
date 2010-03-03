@@ -8,6 +8,10 @@ class Array
     map { |e| e.script if e.respond_to?(:script) }.join('')
   end
 
+  def to_str
+    to_s
+  end
+
 end
 
 module Aurita
@@ -500,10 +504,9 @@ module GUI
 # Compatible to ruby 1.9 but SLOW: 
         tmp = __getobj__
         tmp = tmp.map { |e| e.to_s; e }.join('') if tmp.is_a?(Array)
-#       return "<#{@tag}#{attrib_string}>#{tmp}</#{@tag}>"
 #
 # Ruby 1.8 only: 
-#       inner = __getobj__.to_s
+#       tmp = __getobj__.to_s
         @string = "<#{@tag}#{attrib_string}>#{tmp}</#{@tag}>"
         untouch()
         return @string.sanitized

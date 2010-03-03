@@ -49,7 +49,20 @@ module GUI
   class Widget < DelegateClass(Element)
   include Aurita::GUI
 
+    def self.element_properties(*property_names)
+      property_names.each { |p|
+        send(:define_method, "#{p}=".to_sym) { |value|
+          instance_variable_set("@#{p}", value)
+          rebuild()
+        }
+        send(:define_method, p.to_sym) { 
+          instance_variable_get("@#{p}")
+        }
+      }
+    end
+
     def initialize()
+      @params ||= {}
       super(element())
     end
 
@@ -67,9 +80,13 @@ module GUI
     # Recursively collects js_initialize and js_finalize 
     # code from children, wrapped by including own. 
     def script
-      scr = js_initialize 
-      __getobj__.each { |c| 
-        scr << c.script if c.respond_to?(:script)
+      scr  = js_initialize 
+      # Method #each is delegated to element 
+      each { |c| 
+        if c.respond_to?(:script) then
+          scr << "\n"
+          scr << c.script 
+        end
       }
       scr << js_finalize
       scr
@@ -129,8 +146,12 @@ module GUI
     #
     def rebuild
       rebuilt = element()
-      swap(rebuilt)
+      __setobj__(rebuilt)
       touch()
+    end
+
+    def dom_id
+      @params[:id] if @params
     end
 
   end

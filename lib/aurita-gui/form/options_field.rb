@@ -114,6 +114,8 @@ module GUI
       @option_values     = [ @option_values ] unless @option_values.is_a?(Array)
       @option_labels     = [ @option_labels ] unless @option_labels.is_a?(Array)
       @value             = params[:value]
+      @exclude_values    = params[:exclude]
+      @exclude_values  ||= false
 
       set_options(params[:options]) if params[:options]
 
@@ -129,13 +131,22 @@ module GUI
       params.delete(:value) 
       params.delete(:option_values)
       params.delete(:option_labels)
+      params.delete(:exclude)
       super(params)
     end
 
     def options
-      @option_labels        = @option_values.map { |v| '' } unless @option_labels.length > 0
-      @option_labels.fields = @option_values.map { |v| v.to_s } 
-      @option_labels
+      opt_values = @option_values.map { |v| v.to_s }
+      opt_labels = @option_labels.map { |v| v.to_s }
+      opt_labels = opt_values.map { |v| '' } if @option_labels.length == 0
+      if @exclude_values then
+        @exclude_values.each { |ev|
+          opt_labels.delete_at(opt_values.index(ev.to_s))
+          opt_values.delete(ev.to_s)
+        }
+      end
+      opt_labels.fields = opt_values
+      opt_labels
     end
 
     def option_hash

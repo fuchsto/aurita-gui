@@ -131,6 +131,19 @@ module GUI
       super(params)
     end
 
+    # Useful for identifying instances of meta classes (e.g. Aurita::GUI::Widget) 
+    # as form fields. 
+    # Example: 
+    #
+    #    if obj.respond_to?(:is_form_field) then
+    #      # obj is instance of Form_Field or at least implements 
+    #      # its behaviour
+    #    end
+    #
+    def is_form_field
+      true
+    end
+
     # Virtual method. 
     def element
       raise Form_Error.new('Form_Field@element not set for ' << self.inspect) unless @element

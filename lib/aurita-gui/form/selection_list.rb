@@ -156,7 +156,11 @@ module GUI
       select_option_ids = []
       @selectable_options.each { |v|
         select_option_ids << v 
-        select_options << @option_labels[v]
+        begin
+          select_options << @option_labels[v]
+        rescue ::Exception => e
+          raise ::Exception.new(@option_labels.inspect + ' -- ' + v.inspect)
+        end
       }
       select_options.fields = select_option_ids 
 

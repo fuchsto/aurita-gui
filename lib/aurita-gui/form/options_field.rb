@@ -138,7 +138,10 @@ module GUI
     def options
       opt_values = @option_values.map { |v| v.to_s }
       opt_labels = @option_labels.map { |v| v.to_s }
-      opt_labels = opt_values.map { |v| '' } if @option_labels.length == 0
+
+      if @option_labels.length == 0
+        opt_labels     = opt_values.map { |v| '' } 
+      end
       if @exclude_values then
         @exclude_values.each { |ev|
           opt_labels.delete_at(opt_values.index(ev.to_s))
@@ -146,6 +149,12 @@ module GUI
         }
       end
       opt_labels.fields = opt_values
+      # TODO: As soon as #options has been called, 
+      # @option_labels no longer is an array, but an array list. 
+      # This seems to be okay, as desired type of labels is an 
+      # array like { :value => 'the label' }, but this behaviour 
+      # should be more transparent. 
+      @option_labels = opt_labels
       opt_labels
     end
 

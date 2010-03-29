@@ -116,6 +116,7 @@ module GUI
       @value             = params[:value]
       @exclude_values    = params[:exclude]
       @exclude_values  ||= false
+      @excluded_values   = []
 
       set_options(params[:options]) if params[:options]
 
@@ -136,17 +137,23 @@ module GUI
     end
 
     def options
+      # TODO: This method should only *filter* excluded option 
+      # values and return the resulting option array field, not
+      # write those changes back to @option_values and @option_labels. 
       opt_values = @option_values.map { |v| v.to_s }
       opt_labels = @option_labels.map { |v| v.to_s }
 
       if @option_labels.length == 0
-        opt_labels     = opt_values.map { |v| '' } 
+        opt_labels = opt_values.map { |v| '' } 
       end
       if @exclude_values then
-        @exclude_values.each { |ev|
+        (@exclude_values - @excluded_values).each { |ev|
           opt_labels.delete_at(opt_values.index(ev.to_s))
           opt_values.delete(ev.to_s)
         }
+        @excluded_values += @exclude_values
+        @excluded_values.uniq!
+        @option_values = opt_values
       end
       opt_labels.fields = opt_values
       # TODO: As soon as #options has been called, 
@@ -194,6 +201,7 @@ module GUI
     end
 
     def options=(options)
+      @excluded_values = []
       if options.kind_of? ArrayFields then
         @option_values = options.fields
         @option_labels = options.values

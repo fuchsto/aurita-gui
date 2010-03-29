@@ -61,7 +61,18 @@ module GUI
       params.delete(:row_css_classes)
       params.delete(:column_css_classes)
       set_headers(@headers)
-      super(params, &block)
+
+      if block_given? then
+        content = yield
+        if content.is_a?(Array) then
+          super(params)
+          content.each { |c| add_row(c) }
+        else
+          super(params, &block)
+        end
+      else
+        super(params)
+      end
     end
 
     def headers=(*headers)

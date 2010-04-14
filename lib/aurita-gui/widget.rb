@@ -205,6 +205,10 @@ module GUI
     alias to_str string
     alias to_string string
 
+    def inspect
+      "Aurita::GUI::Widget < #{element.inspect} >"
+    end
+
   end
 
 end

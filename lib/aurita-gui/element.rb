@@ -304,13 +304,13 @@ module GUI
     #   --> <Element [ <Element 'first'>, <Element 'second'> ] >
     #
     def +(other)
+      touch() # ADDED
       other = [other] unless other.is_a?(Array) 
       other.each { |o| 
         if o.is_a?(Element) then
           o.parent = @parent if @parent
         end
       }
-      touch # ADDED
       return [ self ] + other 
     end
 
@@ -567,7 +567,7 @@ module GUI
 
     # Add CSS class to this Element instance. 
     #   e = Element.new(:class => :first)
-    #   e.add_class(:second
+    #   e.add_class(:second)
     #   e.to_s 
     # -->
     #   <div class="first second"></div>

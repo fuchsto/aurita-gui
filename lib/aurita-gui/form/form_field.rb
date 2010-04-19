@@ -103,7 +103,7 @@ module GUI
       @form    ||= params[:form]
       @label     = params[:label]
       # Get value from params unless set by derived constructor: 
-      @value     = params[:value] unless @value 
+      @value   ||= params[:value] 
       @required  = params[:required]
       @hidden    = params[:hidden]
       @data_type = params[:data_type]

@@ -280,6 +280,9 @@ module GUI
     def has_content? 
       (length > 0)
     end
+    def empty? 
+      !has_content
+    end
 
     # Alias definition for #dom_id=(value)
     # Define explicitly so built-in method #id

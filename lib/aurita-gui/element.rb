@@ -654,6 +654,7 @@ module GUI
     def sanitized?
       true
     end
+    alias html_safe? sanitized? # Compatibility with ActiveSupport's ERB patch
 
     # Just returns self as Element instances 
     # always are sane. 
@@ -661,6 +662,7 @@ module GUI
     def sanitized
       self
     end
+    alias html_safe sanitized # Compatibility with ActiveSupport's ERB patch
 
     # Just returns self as Element instances 
     # always are sane. 

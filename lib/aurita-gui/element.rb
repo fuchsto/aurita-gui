@@ -472,7 +472,7 @@ module GUI
     # Render this element to a string. 
     def string
 
-      return @string if @string
+      return @string.sanitized if @string
 
       if @tag == :pseudo then
         @string = get_content
@@ -487,37 +487,43 @@ module GUI
       @@render_count += 1
 
       attrib_string = ''
-      @attrib.each_pair { |name,value|
-        if value.instance_of?(Array) then
-          value = value.reject { |e| e.to_s == '' }.join(' ')
-        elsif value.instance_of?(TrueClass) then
-          value = name
-        end
-        if !value.nil? then
-          value = value.to_s.gsub('"','\"')
-          attrib_string << " #{name}=\"#{value}\""
-        end
-      }
+      if @attrib then
+        @attrib.each_pair { |name,value|
+          if value.instance_of?(Array) then
+            value = value.reject { |e| e.to_s == '' }.join(' ')
+          elsif value.instance_of?(TrueClass) then
+            value = name
+          end
+          if !value.nil? then
+            value = value.to_s.gsub('"','\"')
+            attrib_string << " #{name}=\"#{value}\""
+          end
+        } 
+      end
      
       if (!(@force_closing_tag.instance_of?(FalseClass)) && 
           ![ :hr, :br, :input ].include?(@tag)) then
         @force_closing_tag = true
       end
       if @force_closing_tag || has_content? then
-# Compatible to ruby 1.9 but SLOW: 
-        tmp = __getobj__
-        tmp = tmp.map { |e| e.to_s; e }.join('') if tmp.is_a?(Array)
-#
+        
+       if RUBY_VERSION[0..2] == '1.8' then
 # Ruby 1.8 only: 
-#       tmp = __getobj__.to_s
+         tmp = __getobj__.to_s
+       else
+# Compatible to ruby 1.9 but slower in 1.8: 
+         tmp = __getobj__
+         tmp = tmp.map { |e| e.to_s; e }.join('') if tmp.is_a?(Array)
+       end
+
         @string = "<#{@tag}#{attrib_string}>#{tmp}</#{@tag}>"
         untouch()
-        return @string.sanitized
       else
         untouch()
         @string = "<#{@tag}#{attrib_string} />" 
-        return @string.sanitized
       end
+      
+      return @string.sanitized
     end
     alias to_s string
     alias to_str string

@@ -62,6 +62,19 @@ module GUI
         }
       }
     end
+    
+    def self.element_partials(*property_names)
+      property_names.each { |p|
+        send(:define_method, "#{p}=".to_sym) { |value|
+          instance_variable_set("@#{p}", value)
+          touch()
+        }
+        send(:define_method, p.to_sym) { 
+          instance_variable_get("@#{p}")
+        }
+      }
+    end
+
 
     def initialize()
       @params ||= {}

@@ -94,7 +94,7 @@ module GUI
   #
   class Form_Field < Element
 
-    attr_accessor :type, :form, :label, :value, :required, :hidden, :data_type, :invalid, :hint
+    attr_accessor :type, :form, :label, :value, :required, :hidden, :data_type, :invalid, :hint, :name
 
     def initialize(params, &block)
       # @value  = params[:value]
@@ -129,6 +129,11 @@ module GUI
         params[:content] = @element
       end
       super(params)
+    end
+
+    # Return name attribute value of this form field. 
+    def name
+      @attrib[:name]
     end
 
     # Useful for identifying instances of meta classes (e.g. Aurita::GUI::Widget) 

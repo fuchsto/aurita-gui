@@ -88,7 +88,7 @@ module GUI
   # 
   class Selection_List_Field < Options_Field
 
-    attr_accessor :option_field_decorator, :select_field_class, :selectable_options
+    attr_accessor :option_field_decorator, :select_field_class, :selectable_options, :options_name
 
     def initialize(params={})
       @option_field_decorator ||= params[:option_field]
@@ -97,6 +97,10 @@ module GUI
       @select_field_class     ||= Select_Field
       @selectable_options     ||= params[:selectable_options]
       @selectable_options     ||= []
+
+      # The select field itself does not use the given name attribute value 
+      # itself, but passes it to its option fields: 
+      @options_name             = params[:name]
 
       params.delete(:option_field)
       params.delete(:select_field)
@@ -164,26 +168,25 @@ module GUI
       }
       select_options.fields = select_option_ids 
 
-      base_id   = @attrib[:id]
-      base_id ||= @attrib[:name]
+      base_id   = "#{@attrib[:id]}_select" if @attrib[:id]
+      base_id ||= "#{@attrib[:name]}_select"
+
+      select_field = @select_field_class.new(:id      => base_id, 
+                                             :options => select_options, 
+                                             :parent  => self, 
+                                             :name    => "#{@attrib[:name]}_select" ) 
       
       if @value && @value.length > 0 then
         HTML.div(@attrib) { 
-          HTML.ul(:id => "#{base_id}_selected_options") { 
+          HTML.ul(:id => "#{@options_name}_selected_options") { 
             option_elements()
           } + 
-          @select_field_class.new(:id      => "#{base_id}_select", 
-                                  :options => select_options, 
-                                  :parent  => self, 
-                                  :name    => "#{@attrib[:name]}" ) 
+          select_field
         }
       else
         HTML.div(@attrib) { 
-          HTML.ul(:id => "#{base_id}_selected_options", :force_closing_tag => true)  + 
-          @select_field_class.new(:id      => "#{base_id}_select", 
-                                  :options => select_options, 
-                                  :parent  => self, 
-                                  :name    => "#{@attrib[:name]}" ) 
+          HTML.ul(:id => "#{@options_name}_selected_options", :force_closing_tag => true) + 
+          select_field
         }
       end
     end

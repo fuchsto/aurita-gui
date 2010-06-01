@@ -170,25 +170,21 @@ module GUI
 
       base_id   = "#{@attrib[:id]}_select" if @attrib[:id]
       base_id ||= "#{@attrib[:name]}_select"
-
+      
       select_field = @select_field_class.new(:id      => base_id, 
                                              :options => select_options, 
                                              :parent  => self, 
                                              :name    => "#{@attrib[:name]}_select" ) 
       
-      if @value && @value.length > 0 then
-        HTML.div(@attrib) { 
-          HTML.ul(:id => "#{@options_name}_selected_options") { 
+      
+      HTML.div(@attrib) { 
+        HTML.ul(:id => "#{@options_name}_selected_options") { 
+          if @value && @value.length > 0 then
             option_elements()
-          } + 
-          select_field
-        }
-      else
-        HTML.div(@attrib) { 
-          HTML.ul(:id => "#{@options_name}_selected_options", :force_closing_tag => true) + 
-          select_field
-        }
-      end
+          end
+        } + 
+        select_field
+      }
     end
 
     def readonly_element

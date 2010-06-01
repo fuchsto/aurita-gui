@@ -493,8 +493,10 @@ module GUI
             value = value.reject { |e| e.to_s == '' }.join(' ')
           elsif value.instance_of?(TrueClass) then
             value = name
+          else
+            value = value.to_s
           end
-          if !value.nil? then
+          if !value.empty? then
             value = value.to_s.gsub('"','\"')
             attrib_string << " #{name}=\"#{value}\""
           end

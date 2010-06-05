@@ -156,7 +156,18 @@ module GUI
     # as select field element containing additionally 
     # available options. 
     def element
-      select_options = []
+      HTML.div(@attrib) { 
+        HTML.ul(:id => "#{@options_name}_selected_options") { 
+          if @value && @value.length > 0 then
+            option_elements()
+          end
+        } + 
+        select_field().decorated_element
+      }
+    end
+
+    def select_field_options
+      select_options    = []
       select_option_ids = []
       @selectable_options.each { |v|
         select_option_ids << v 
@@ -167,24 +178,32 @@ module GUI
         end
       }
       select_options.fields = select_option_ids 
+      select_options
+    end
+
+    def select_field
+      return @select_field if @select_field
 
       base_id   = "#{@attrib[:id]}_select" if @attrib[:id]
       base_id ||= "#{@attrib[:name]}_select"
-      
-      select_field = @select_field_class.new(:id      => base_id, 
-                                             :options => select_options, 
-                                             :parent  => self, 
-                                             :name    => "#{@attrib[:name]}_select" ) 
-      
-      
-      HTML.div(@attrib) { 
-        HTML.ul(:id => "#{@options_name}_selected_options") { 
-          if @value && @value.length > 0 then
-            option_elements()
-          end
-        } + 
-        select_field
-      }
+      @select_field = @select_field_class.new(:id      => base_id, 
+                                              :options => select_field_options(), 
+                                              :parent  => self, 
+                                              :name    => "#{@attrib[:name]}_select" ) 
+      @select_field
+    end 
+
+    def onfocus=(fun)
+      @select_field ||= select_field()
+      @select_field.onfocus = fun
+    end
+    def onblur=(fun)
+      @select_field ||= select_field()
+      @select_field.onblur = fun
+    end
+    def onchange=(fun)
+      @select_field ||= select_field()
+      @select_field.onchange = fun
     end
 
     def readonly_element

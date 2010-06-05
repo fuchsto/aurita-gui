@@ -4,7 +4,6 @@ require('arrayfields')
 
 module Aurita
 module GUI
-  # TODO: Use ArrayFields for option field/value storage
 
   # Abstract base class for all form elements containing
   # options, like Select_Field, Radio_Field, Checkbox_Field

@@ -66,28 +66,43 @@ module GUI
 
     def initialize(field)
       label_params = false
+      @field       = field
+      dec_field    = decorate_field(@field.decorated_element)
+      @content     = [ dec_field ]
+
       if field.label then
         label_params = { :for => field.dom_id, :force_closing_tag => true }
-        label_params[:id] = field.dom_id.to_s + '_label' if field.dom_id
-        label = field.label
-        @content = [ HTML.label(label_params) { label }, field ]
-      else 
-        @content = field
+        label_params[:id] = "#{field.dom_id}_label" if field.dom_id
+        @label   = HTML.label(label_params) { @field.label }
+        @content = [ @label ] + @content
       end
+
+      if field.hint then
+        @hint     = field.hint
+        @content << decorate_hint(@hint) 
+      end
+
       field.dom_id = field.name.to_s.gsub('.','_') unless field.dom_id
 
       # Inherit css classes from decorated field, if any: 
-      css_classes   = field.css_class.map { |c| c.to_s + '_wrap' if c }
+      css_classes   = field.css_class.map { |c| "#{c}_wrap" if c }
       css_classes ||= []
 
       css_classes << field.class.to_s.split('::')[-1].downcase + '_wrap form_field' 
       css_classes << ' required' if field.required?
-      css_classes << ' invalid' if field.invalid?
-      params = { :tag => :li, 
+      params = { :tag     => :li, 
                  :content => @content, 
-                 :id => field.dom_id.to_s + '_wrap', 
-                 :class => css_classes }
+                 :id      => field.dom_id.to_s + '_wrap', 
+                 :class   => css_classes }
       super(params)
+    end
+
+    def decorate_field(field)
+      field
+    end
+
+    def decorate_hint(hint)
+      hint
     end
 
   end

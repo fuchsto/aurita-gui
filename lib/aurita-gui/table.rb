@@ -35,7 +35,7 @@ module GUI
   #
   class Table < Element
 
-    attr_accessor :columns, :headers, :rows, :template, :row_css_classes, :column_css_classes, :row_class
+    attr_accessor :columns, :headers, :rows, :template, :row_css_classes, :column_css_classes, :row_class, :row_css_class_seq
 
     def initialize(params={}, &block)
       params[:tag]   = :table
@@ -51,6 +51,9 @@ module GUI
       @row_css_classes      = params[:row_css_classes]
       @row_css_classes    ||= []
       @row_css_classes      = [ @row_css_classes ] unless @row_css_classes.is_a?(Array)
+      @row_css_class_seq    = params[:row_css_class_seq]
+      @row_css_class_seq  ||= []
+      @row_css_class_seq    = [ @row_css_class_seq ] unless @row_css_class_seq.is_a?(Array)
       @column_css_classes   = params[:column_css_classes]
       @column_css_classes ||= []
       @column_css_classes   = [ @column_css_classes ] unless @column_css_classes.is_a?(Array)
@@ -59,6 +62,7 @@ module GUI
       params.delete(:headers)
       params.delete(:num_columns)
       params.delete(:row_css_classes)
+      params.delete(:row_css_class_seq)
       params.delete(:column_css_classes)
       set_headers(@headers)
 

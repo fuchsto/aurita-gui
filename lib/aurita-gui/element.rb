@@ -398,7 +398,7 @@ module GUI
         end
         return self
       else
-        return @attrib[meth] unless value or meth.to_s.include? '='
+        return @attrib[meth] unless (value || meth.to_s.include?('='))
         @attrib[meth.to_s.gsub('=','').intern] = value
       end
     end

@@ -14,7 +14,7 @@ as stand-alone library in any context (such as rails).
 As there seems to be a lack of ruby form generators, i decided to release this 
 part of Aurita in a single gem with no dependencies on aurita itself. 
   EOF
-  s.version = '0.6.0'
+  s.version = '0.6.5'
   s.author = 'Tobias Fuchs'
   s.email = 'fuchs@wortundform.de'
   s.date = Time.now

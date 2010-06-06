@@ -151,8 +151,8 @@ module GUI
 
     # Virtual method. 
     def element
-      raise Form_Error.new('Form_Field@element not set for ' << self.inspect) unless @element
-      @element
+      return @element if @element
+      raise Form_Error.new('Form_Field@element and Form_Field#element() not defined for ' << self.inspect) 
     end
     def decorated_element
       element()

@@ -396,6 +396,9 @@ module GUI
     # Assign / overwrite field element with index form_index. 
     def []=(index, form_field)
       @content = false # Invalidate
+
+      form_field.hint  = @hints[form_field.name.to_s] if (@hints && !form_field.hint)
+
       if !index.kind_of? Numeric
         delegated_to_fieldset = false
         @fieldsets.values.each { |fieldset|
@@ -468,6 +471,7 @@ module GUI
       elsif form_field_element.respond_to?(:is_form_field) then
         field_name = form_field_element.name.to_s
         form_field_element.value = @values[field_name] unless form_field_element.value.to_s != ''
+        form_field_element.hint  = @hints[field_name] if (@hints && !form_field_element.hint)
         if !form_field_element.dom_id then
           form_field_element.dom_id = field_name.gsub('.','_')
         end
@@ -552,6 +556,35 @@ module GUI
       @content = false # Invalidate
     end
     alias set_field_config fields=
+
+    # Helper method to add hints for fields in this form, so it does 
+    # not have to be done for each field manually. 
+    # 
+    # Example: 
+    #
+    #   form.add(Text_Field.new(:name => :username))
+    #   form.add(Password_Field.new(:name => :pass))
+    #   form.add(Password_Field.new(:name => :pass_confirm))
+    #
+    #   form.hints = { :username     => 'This will also be your login', 
+    #                  :pass         => 'Must be at least 8 characters long', 
+    #                  :pass_confirm => 'Repeat your password' }
+    #
+    #
+    # By default, hints will be rendered as a div with css 
+    # class "hint" in HTML, right beneath the form field. It is 
+    # up to CSS and Javascript to define their appearance and 
+    # behaviour. 
+    #
+    def hints=(hints)
+      @hints = hints
+      hints.each_pair { |field_name, hint|
+        field = @element_map[field_name.to_s]
+        field.hint = hint if field
+      }
+    end
+    alias set_hint_config hints=
+    alias set_hints hints=
 
     # Set field values for this form. 
     # Expects hash mapping field names to values. 

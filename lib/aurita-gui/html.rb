@@ -309,6 +309,29 @@ module GUI
       render(meth_name, *attribs, &block) 
     end
 
+    def self.render_list(tag, *attribs, &block)
+      e = render(tag, *attribs, &block)
+      e.add_css_class(:empty) if e.empty? 
+      idx = 0
+      e.each { |child|
+        if child.respond_to?(:tag) && child.tag == :li then
+          child.add_css_class("item_#{idx+1}")
+          child.add_css_class("first") if idx == 0
+          child.add_css_class("last") if idx == (e.length-1)
+          idx += 1
+        end
+      }
+      e
+    end
+
+    def self.ulist(*attribs, &block)
+      render_list(:ul, *attribs, &block)
+    end
+    def self.olist(*attribs, &block)
+      render_list(:ol, *attribs, &block)
+    end
+
+
     def self.puts(arg)
       HTML.build { arg }
     end

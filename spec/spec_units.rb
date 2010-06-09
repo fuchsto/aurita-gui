@@ -33,3 +33,17 @@ class Box < Widget
   end
 end
 
+class Annotated_Image < Widget
+
+  element_properties :src, :desc
+
+  def initialize(src, desc=nil)
+    @src  = src
+    @desc = desc
+    super()
+  end
+  def element
+    HTML.div { HTML.img(:src => @src) + HTML.div.description { @desc } }
+  end
+end
+

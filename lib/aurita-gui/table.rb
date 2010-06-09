@@ -35,13 +35,14 @@ module GUI
   #
   class Table < Element
 
-    attr_accessor :columns, :headers, :rows, :template, :row_css_classes, :column_css_classes, :row_class
+    attr_accessor :columns, :headers, :rows, :template, :row_css_classes, :column_css_classes, :row_class, :row_css_class_seq
 
     def initialize(params={}, &block)
       params[:tag]   = :table
       @headers     ||= params[:headers]
       @num_columns ||= params[:num_columns]
-      @num_columns ||= @headers.length if (!@columns && @headers)
+      @num_columns ||= @headers.length if @headers.is_a?(Array)
+      @num_columns ||= 1
       @columns     ||= []
       @rows        ||= []
       @headers     ||= []
@@ -50,6 +51,9 @@ module GUI
       @row_css_classes      = params[:row_css_classes]
       @row_css_classes    ||= []
       @row_css_classes      = [ @row_css_classes ] unless @row_css_classes.is_a?(Array)
+      @row_css_class_seq    = params[:row_css_class_seq]
+      @row_css_class_seq  ||= []
+      @row_css_class_seq    = [ @row_css_class_seq ] unless @row_css_class_seq.is_a?(Array)
       @column_css_classes   = params[:column_css_classes]
       @column_css_classes ||= []
       @column_css_classes   = [ @column_css_classes ] unless @column_css_classes.is_a?(Array)
@@ -58,9 +62,21 @@ module GUI
       params.delete(:headers)
       params.delete(:num_columns)
       params.delete(:row_css_classes)
+      params.delete(:row_css_class_seq)
       params.delete(:column_css_classes)
       set_headers(@headers)
-      super(params, &block)
+
+      if block_given? then
+        content = yield
+        if content.is_a?(Array) then
+          super(params)
+          content.each { |c| add_row(c) }
+        else
+          super(params, &block)
+        end
+      else
+        super(params)
+      end
     end
 
     def headers=(*headers)
@@ -156,11 +172,11 @@ module GUI
       if block_given? then
         cell_data = yield
         params    = args[0]
-        params  ||= {}
       else
         cell_data = args[0]
         params    = args[1]
       end
+      params  ||= {}
       params[:tag]  = :tr
 
       @parent     ||= params[:parent]
@@ -178,7 +194,7 @@ module GUI
       @content = @cells
 
       super(params)
-      add_css_classes(@parent.row_css_classes) if @parent.row_css_classes.length > 0
+      add_css_classes(@parent.row_css_classes) if @parent && @parent.row_css_classes.length > 0
     end
 
     def table
@@ -245,7 +261,7 @@ module GUI
       @parent             ||= params[:parent]
       params.delete(:column_index)
       super(params)
-      column_css_classes = @parent.parent.column_css_classes[@column_index]
+      column_css_classes = @parent.parent.column_css_classes[@column_index] if @parent.parent
       add_css_classes(column_css_classes) if column_css_classes
     end
 

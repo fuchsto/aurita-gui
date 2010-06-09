@@ -94,7 +94,7 @@ module GUI
   #
   class Form_Field < Element
 
-    attr_accessor :type, :form, :label, :value, :required, :hidden, :data_type, :invalid, :hint
+    attr_accessor :type, :form, :label, :value, :required, :hidden, :data_type, :invalid, :hint, :name
 
     def initialize(params, &block)
       # @value  = params[:value]
@@ -103,7 +103,7 @@ module GUI
       @form    ||= params[:form]
       @label     = params[:label]
       # Get value from params unless set by derived constructor: 
-      @value     = params[:value] unless @value 
+      @value   ||= params[:value] 
       @required  = params[:required]
       @hidden    = params[:hidden]
       @data_type = params[:data_type]
@@ -131,17 +131,54 @@ module GUI
       super(params)
     end
 
+    # Return name attribute value of this form field. 
+    def name
+      @attrib[:name]
+    end
+
+    # Useful for identifying instances of meta classes (e.g. Aurita::GUI::Widget) 
+    # as form fields. 
+    # Example: 
+    #
+    #    if obj.respond_to?(:is_form_field) then
+    #      # obj is instance of Form_Field or at least implements 
+    #      # its behaviour
+    #    end
+    #
+    def is_form_field
+      true
+    end
+
     # Virtual method. 
     def element
-      raise Form_Error.new('Form_Field@element not set') unless @element
-      @element
+      return @element if @element
+      raise Form_Error.new('Form_Field@element and Form_Field#element() not defined for ' << self.inspect) 
+    end
+    def decorated_element
+      element()
+    end
+
+    # After changing a form field's attribute after having it rendered once, 
+    # you have to touch it when rendering it again so the changes take effect. 
+    # Example: 
+    #
+    #   field = Input_Field.new(:name => :the_name)
+    #   puts field.to_s
+    #
+    #   field.name = :changed
+    #   field.touch
+    #
+    #   puts field.to_s
+    #
+    def touch
+      super()
+      @element = false
     end
 
     # Render this form field element to a 
     # readonly element. 
     # Will not affect this element instance. 
     def readonly_element
-      # Todo: Add CSS classes 'readonly' and self.class
       HTML.div(@attrib) { @value }
     end
 
@@ -157,8 +194,8 @@ module GUI
 
     # Render this form field element to string. 
     def to_s
-      return element().string unless @readonly
-      return readonly_element().string
+      return element().to_s unless @readonly
+      return readonly_element().to_s
     end
     alias string to_s
 

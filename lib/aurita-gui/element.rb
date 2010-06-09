@@ -1,5 +1,24 @@
 
 require('delegate')
+require('aurita-gui/sanitize')
+
+class Array
+
+  def script
+    map { |e| e.script if e.respond_to?(:script) }.join('')
+  end
+
+  def to_str
+    to_s
+  end
+
+end
+
+class Symbol
+  def empty?
+    false
+  end
+end
 
 module Aurita
 module GUI
@@ -173,6 +192,7 @@ module GUI
     end
 
     def initialize(*args, &block) 
+    # {{{
 
       case args[0]
       when Hash 
@@ -202,10 +222,16 @@ module GUI
       else
         @content = params[:content] unless @content
       end
-# DON'T EVER USE @content.string UNLESS FOR RENDERING!!
-#     @content   = nil if @content.to_s.length == 0    # <--- NOOOOooo!
-# instead, do: 
-      @content   = nil if !@content.is_a?(Element) && ((@content.respond_to?(:length) && @content.length == 0))
+
+# DON'T EVER USE @content.string UNLESS FOR RENDERING!
+#     @content = nil if @content.to_s.length == 0    # <--- NOOOOooo!
+# instead, test for an empty string like this: 
+      if !@content.is_a?(Element) && 
+         @content.respond_to?(:length) && 
+         @content.length == 0 then
+        @content   = nil 
+      end
+
       @content   = [ @content ] unless (@content.kind_of? Array or @content.nil?)
       @content ||= []
 
@@ -247,7 +273,8 @@ module GUI
       @string  = nil
       # Don't re-touch! Parent could have been caller!
       @parent.touch() if (@parent && !@parent.touched?) 
-    end
+    end # }}}
+
     alias touch! touch
     def touched? 
       (@touched == true)
@@ -259,6 +286,9 @@ module GUI
     def has_content? 
       (length > 0)
     end
+    def empty? 
+      (length == 0)
+    end
 
     # Alias definition for #dom_id=(value)
     # Define explicitly so built-in method #id
@@ -267,6 +297,7 @@ module GUI
       @attrib[:id] = value if @attrib
     end
     alias dom_id= id=
+
     # Alias definition for #dom_id()
     def id
       @attrib[:id] if @attrib
@@ -282,13 +313,13 @@ module GUI
     #   --> <Element [ <Element 'first'>, <Element 'second'> ] >
     #
     def +(other)
+      touch() # ADDED
       other = [other] unless other.is_a?(Array) 
       other.each { |o| 
         if o.is_a?(Element) then
           o.parent = @parent if @parent
         end
       }
-      touch # ADDED
       return [ self ] + other 
     end
 
@@ -306,6 +337,11 @@ module GUI
     end
     alias add_child << 
     alias add_content << 
+    alias append <<
+
+    def prepend(other)
+      set_content(other + get_content)
+    end
 
     # Returns [ self ], so concatenation with 
     # Arrays and other Element instances works 
@@ -368,7 +404,7 @@ module GUI
         end
         return self
       else
-        return @attrib[meth] unless value or meth.to_s.include? '='
+        return @attrib[meth] unless (value || meth.to_s.include?('='))
         @attrib[meth.to_s.gsub('=','').intern] = value
       end
     end
@@ -395,14 +431,16 @@ module GUI
 
     # Do not redirect random access operators. 
     def [](index)
-      return super(index) if (index.is_a?(Fixnum))
+      return super(index) if (index.is_a?(Numeric))
       return find_by_dom_id(index) 
     end
 
     # Retreive an element from object tree by 
     # its dom_id
     def find_by_dom_id(dom_id)
-      dom_id = dom_id.to_sym
+      return unless dom_id
+      
+      dom_id = dom_id.to_sym 
       each { |c|
         if c.is_a? Element then
           return c if (c.dom_id == dom_id)
@@ -415,10 +453,15 @@ module GUI
 
     # Do not redirect random access operators. 
     def []=(index,element)
+      if (index.is_a? Numeric) then
+        if __getobj__[index].is_a?(Element)
+          __getobj__[index].swap(element) 
+        end
+      else
+        e = find_by_dom_id(index) 
+        e.swap(element)
+      end
       touch()
-      super(index,element) if (index.is_a? Numeric)
-      e = find_by_dom_id(index) 
-      e.swap(element)
     end
 
     # Copy constructor. Replace self with 
@@ -436,13 +479,14 @@ module GUI
     # Static helper definition for clearing 
     # CSS floats. 
     def clear_floating
-      '<div style="clear: both;" />'
+      '<div style="clear: both;" />'.sanitized
     end
 
     # Render this element to a string. 
     def string
 
-      return @string if @string
+      return @string.sanitized if @string
+
       if @tag == :pseudo then
         @string = get_content
         if @string.is_a?(Array) then
@@ -450,44 +494,51 @@ module GUI
         else 
           @string = @string.to_s
         end
-        return @string
+        return @string.sanitized
       end
 
       @@render_count += 1
 
       attrib_string = ''
-      @attrib.each_pair { |name,value|
-        if value.instance_of?(Array) then
-          value = value.reject { |e| e.to_s == '' }.join(' ')
-        elsif value.instance_of?(TrueClass) then
-          value = name
-        end
-        if !value.nil? then
-          value = value.to_s.gsub('"','\"')
-          attrib_string << " #{name}=\"#{value}\""
-        end
-      }
+      if @attrib then
+        @attrib.each_pair { |name,value|
+          if value.instance_of?(Array) then
+            value = value.reject { |e| e.to_s == '' }.join(' ')
+          elsif value.instance_of?(TrueClass) then
+            value = name
+          else
+            value = value.to_s
+          end
+          if !value.empty? then
+            value = value.to_s.gsub('"','\"')
+            attrib_string << " #{name}=\"#{value}\""
+          end
+        } 
+      end
      
       if (!(@force_closing_tag.instance_of?(FalseClass)) && 
           ![ :hr, :br, :input ].include?(@tag)) then
         @force_closing_tag = true
       end
       if @force_closing_tag || has_content? then
-# Compatible to ruby 1.9 but SLOW: 
-        tmp = __getobj__
-        tmp = tmp.map { |e| e.to_s; e }.join('') if tmp.is_a?(Array)
-#       return "<#{@tag}#{attrib_string}>#{tmp}</#{@tag}>"
-#
+        
+       if RUBY_VERSION[0..2] == '1.8' then
 # Ruby 1.8 only: 
-#       inner = __getobj__.to_s
+         tmp = __getobj__.to_s
+       else
+# Compatible to ruby 1.9 but slower in 1.8: 
+         tmp = __getobj__
+         tmp = tmp.map { |e| e.to_s; e }.join('') if tmp.is_a?(Array)
+       end
+
         @string = "<#{@tag}#{attrib_string}>#{tmp}</#{@tag}>"
         untouch()
-        return @string
       else
         untouch()
         @string = "<#{@tag}#{attrib_string} />" 
-        return @string
       end
+      
+      return @string.sanitized
     end
     alias to_s string
     alias to_str string
@@ -496,7 +547,8 @@ module GUI
     # Recursively collects script code ( = js_initialize for Widgets) 
     # from children, including own. 
     def script
-      scr = @script.to_s
+      scr = ''
+      scr << js_initialize()
       @content.each { |c|
         if c.respond_to?(:script) then
           c_script  = c.script
@@ -504,10 +556,19 @@ module GUI
           scr << c_script
         end
       }
+      scr << js_finalize()
       scr
     end
 
+    # Javascript code to be called before javascript 
+    # code of child elements. 
     def js_initialize
+      ''
+    end
+
+    # Javascript code to be called after javascript 
+    # code of child elements. 
+    def js_finalize
       ''
     end
 
@@ -530,7 +591,7 @@ module GUI
 
     # Add CSS class to this Element instance. 
     #   e = Element.new(:class => :first)
-    #   e.add_class(:second
+    #   e.add_class(:second)
     #   e.to_s 
     # -->
     #   <div class="first second"></div>
@@ -601,13 +662,34 @@ module GUI
       }
     end
     
-    def js_init_code()
-      code = js_initialize() if self.respond_to?(:js_initialize)
-      code ||= ''
-      recurse { |e|
-        code << e.js_initialize if e.respond_to?(:js_initialize)
-      }
-      code
+    # To avoid memory leak
+    def flatten
+      self
+    end
+
+    # Element instances always are sane, as 
+    # they are encoding non-sanitized content 
+    # automatically when being rendered to a 
+    # String. 
+    #
+    def sanitized?
+      true
+    end
+    alias html_safe? sanitized? # Compatibility with ActiveSupport's ERB patch
+
+    # Just returns self as Element instances 
+    # always are sane. 
+    #
+    def sanitized
+      self
+    end
+    alias html_safe sanitized # Compatibility with ActiveSupport's ERB patch
+
+    # Just returns self as Element instances 
+    # always are sane. 
+    #
+    def sanitize! 
+      self
     end
 
     # To avoid memory leak

@@ -4,7 +4,6 @@ require('arrayfields')
 
 module Aurita
 module GUI
-  # TODO: Use ArrayFields for option field/value storage
 
   # Abstract base class for all form elements containing
   # options, like Select_Field, Radio_Field, Checkbox_Field
@@ -114,6 +113,9 @@ module GUI
       @option_values     = [ @option_values ] unless @option_values.is_a?(Array)
       @option_labels     = [ @option_labels ] unless @option_labels.is_a?(Array)
       @value             = params[:value]
+      @exclude_values    = params[:exclude]
+      @exclude_values  ||= false
+      @excluded_values   = []
 
       set_options(params[:options]) if params[:options]
 
@@ -129,14 +131,37 @@ module GUI
       params.delete(:value) 
       params.delete(:option_values)
       params.delete(:option_labels)
+      params.delete(:exclude)
       super(params)
     end
 
     def options
-    # @option_labels = @option_values.map { |v| v.to_s } unless @option_labels.length > 0
-      @option_labels = @option_values.map { |v| '' } unless @option_labels.length > 0
-      @option_labels.fields = @option_values.map { |v| v.to_s } 
-      @option_labels
+      # TODO: This method should only *filter* excluded option 
+      # values and return the resulting option array field, not
+      # write those changes back to @option_values and @option_labels. 
+      opt_values = @option_values.map { |v| v.to_s }
+      opt_labels = @option_labels.map { |v| v.to_s }
+
+      if @option_labels.length == 0
+        opt_labels = opt_values.map { |v| '' } 
+      end
+      if @exclude_values then
+        (@exclude_values - @excluded_values).each { |ev|
+          opt_labels.delete_at(opt_values.index(ev.to_s))
+          opt_values.delete(ev.to_s)
+        }
+        @excluded_values += @exclude_values
+        @excluded_values.uniq!
+        @option_values = opt_values
+      end
+      opt_labels.fields = opt_values
+      # TODO: As soon as #options has been called, 
+      # @option_labels no longer is an array, but an array list. 
+      # This seems to be okay, as desired type of labels is an 
+      # array like { :value => 'the label' }, but this behaviour 
+      # should be more transparent. 
+      @option_labels = opt_labels
+      opt_labels
     end
 
     def option_hash
@@ -175,6 +200,7 @@ module GUI
     end
 
     def options=(options)
+      @excluded_values = []
       if options.kind_of? ArrayFields then
         @option_values = options.fields
         @option_labels = options.values

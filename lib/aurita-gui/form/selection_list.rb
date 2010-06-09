@@ -88,7 +88,7 @@ module GUI
   # 
   class Selection_List_Field < Options_Field
 
-    attr_accessor :option_field_decorator, :select_field_class, :selectable_options
+    attr_accessor :option_field_decorator, :select_field_class, :selectable_options, :options_name
 
     def initialize(params={})
       @option_field_decorator ||= params[:option_field]
@@ -97,6 +97,10 @@ module GUI
       @select_field_class     ||= Select_Field
       @selectable_options     ||= params[:selectable_options]
       @selectable_options     ||= []
+
+      # The select field itself does not use the given name attribute value 
+      # itself, but passes it to its option fields: 
+      @options_name             = params[:name]
 
       params.delete(:option_field)
       params.delete(:select_field)
@@ -152,36 +156,54 @@ module GUI
     # as select field element containing additionally 
     # available options. 
     def element
-      select_options = []
+      HTML.div(@attrib) { 
+        HTML.ul(:id => "#{@options_name}_selected_options") { 
+          if @value && @value.length > 0 then
+            option_elements()
+          end
+        } + 
+        select_field().decorated_element
+      }
+    end
+
+    def select_field_options
+      select_options    = []
       select_option_ids = []
       @selectable_options.each { |v|
         select_option_ids << v 
-        select_options << @option_labels[v]
+        begin
+          select_options << @option_labels[v]
+        rescue ::Exception => e
+          raise ::Exception.new(@option_labels.inspect + ' -- ' + v.inspect)
+        end
       }
       select_options.fields = select_option_ids 
+      select_options
+    end
 
-      base_id   = @attrib[:id]
-      base_id ||= @attrib[:name]
-      
-      if @value && @value.length > 0 then
-        HTML.div(@attrib) { 
-          HTML.ul(:id => "#{base_id}_selected_options") { 
-            option_elements()
-          } + 
-          @select_field_class.new(:id      => "#{base_id}_select", 
-                                  :options => select_options, 
-                                  :parent  => self, 
-                                  :name    => "#{@attrib[:name]}" ) 
-        }
-      else
-        HTML.div(@attrib) { 
-          HTML.ul(:id => "#{base_id}_selected_options", :force_closing_tag => true)  + 
-          @select_field_class.new(:id      => "#{base_id}_select", 
-                                  :options => select_options, 
-                                  :parent  => self, 
-                                  :name    => "#{@attrib[:name]}" ) 
-        }
-      end
+    def select_field
+      return @select_field if @select_field
+
+      base_id   = "#{@attrib[:id]}_select" if @attrib[:id]
+      base_id ||= "#{@attrib[:name]}_select"
+      @select_field = @select_field_class.new(:id      => base_id, 
+                                              :options => select_field_options(), 
+                                              :parent  => self, 
+                                              :name    => "#{@attrib[:name]}_select" ) 
+      @select_field
+    end 
+
+    def onfocus=(fun)
+      @select_field ||= select_field()
+      @select_field.onfocus = fun
+    end
+    def onblur=(fun)
+      @select_field ||= select_field()
+      @select_field.onblur = fun
+    end
+    def onchange=(fun)
+      @select_field ||= select_field()
+      @select_field.onchange = fun
     end
 
     def readonly_element

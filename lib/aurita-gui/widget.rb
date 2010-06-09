@@ -49,8 +49,38 @@ module GUI
   class Widget < DelegateClass(Element)
   include Aurita::GUI
 
+    attr_reader :build_count
+
+    def self.element_properties(*property_names)
+      property_names.each { |p|
+        send(:define_method, "#{p}=".to_sym) { |value|
+          instance_variable_set("@#{p}", value)
+          touch()
+        }
+        send(:define_method, p.to_sym) { 
+          instance_variable_get("@#{p}")
+        }
+      }
+    end
+    
+    def self.element_partials(*property_names)
+      property_names.each { |p|
+        send(:define_method, "#{p}=".to_sym) { |value|
+          instance_variable_set("@#{p}", value)
+          touch()
+        }
+        send(:define_method, p.to_sym) { 
+          instance_variable_get("@#{p}")
+        }
+      }
+    end
+
+
     def initialize()
+      @params ||= {}
       super(element())
+      @touched = false
+      @build_count = 0
     end
 
     def element
@@ -60,14 +90,34 @@ module GUI
     def js_initialize
       ''
     end
+    def js_finalize
+      ''
+    end
 
-    # Recursively collects js_initialize code from 
-    # children, including own. 
+    def touch
+      @touched = true
+    end
+
+    def untouch
+      @touched = false
+    end
+
+    def touched?
+      (@touched == true)
+    end
+
+    # Recursively collects js_initialize and js_finalize 
+    # code from children, wrapped by including own. 
     def script
-      scr = js_initialize 
-      __getobj__.each { |c| 
-        scr << c.script if c.respond_to?(:script)
+      scr  = js_initialize 
+      # Method #each is delegated to element 
+      scr << "\n"
+      each { |c| 
+        if c.respond_to?(:script) then
+          scr << c.script 
+        end
       }
+      scr << js_finalize
       scr
     end
 
@@ -123,10 +173,53 @@ module GUI
     #   box.rebuild
     #   --> '<div class="box">My content is Jada</div>
     #
+    # You can avoid this by telling the Widget class which attribute 
+    # changes should lead to rebuilding its instance on the next 
+    # #string call. Do so by using Widget.element_properties: 
+    #
+    #   class Box < Widget
+    #     # Behaves like attr_accessor
+    #     element_properties :opened, :box_content
+    #
+    #     # ... same as before ...
+    #   end
+    #
+    #   box = Box.new(:opened => false) { 'content here' }
+    #   box.touched? 
+    #   --> false
+    #   box.opened = true
+    #   box.touched?
+    #   --> true
+    #
+    #   box.build_count
+    #   --> 0
+    #   puts box.to_s
+    #   box.build_count
+    #   --> 1
+    #
     def rebuild
+      @build_count += 1
       rebuilt = element()
       swap(rebuilt)
-      touch()
+      @touched = false
+      return rebuilt
+    end
+
+    def dom_id
+      @params[:id] if @params
+    end
+
+    alias delegate_str to_s
+    def string
+      return rebuild.to_s if @touched
+      delegate_str
+    end
+    alias to_s string
+    alias to_str string
+    alias to_string string
+
+    def inspect
+      "Aurita::GUI::Widget < #{element.inspect} >"
     end
 
   end

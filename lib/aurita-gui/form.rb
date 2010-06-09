@@ -66,28 +66,43 @@ module GUI
 
     def initialize(field)
       label_params = false
+      @field       = field
+      dec_field    = decorate_field(@field.decorated_element)
+      @content     = [ dec_field ]
+
       if field.label then
         label_params = { :for => field.dom_id, :force_closing_tag => true }
-        label_params[:id] = field.dom_id.to_s + '_label' if field.dom_id
-        label = field.label
-        @content = [ HTML.label(label_params) { label }, field ]
-      else 
-        @content = field
+        label_params[:id] = "#{field.dom_id}_label" if field.dom_id
+        @label   = HTML.label(label_params) { @field.label }
+        @content = [ @label ] + @content
       end
+
+      if field.hint then
+        @hint     = field.hint
+        @content << decorate_hint(@hint) 
+      end
+
       field.dom_id = field.name.to_s.gsub('.','_') unless field.dom_id
 
       # Inherit css classes from decorated field, if any: 
-      css_classes   = field.css_class.map { |c| c.to_s + '_wrap' if c }
+      css_classes   = field.css_class.map { |c| "#{c}_wrap" if c }
       css_classes ||= []
 
       css_classes << field.class.to_s.split('::')[-1].downcase + '_wrap form_field' 
       css_classes << ' required' if field.required?
-      css_classes << ' invalid' if field.invalid?
-      params = { :tag => :li, 
+      params = { :tag     => :li, 
                  :content => @content, 
-                 :id => field.dom_id.to_s + '_wrap', 
-                 :class => css_classes }
+                 :id      => field.dom_id.to_s + '_wrap', 
+                 :class   => css_classes }
       super(params)
+    end
+
+    def decorate_field(field)
+      field
+    end
+
+    def decorate_hint(hint)
+      hint
     end
 
   end
@@ -381,6 +396,9 @@ module GUI
     # Assign / overwrite field element with index form_index. 
     def []=(index, form_field)
       @content = false # Invalidate
+
+      form_field.hint  = @hints[form_field.name.to_s] if (@hints && !form_field.hint)
+
       if !index.kind_of? Numeric
         delegated_to_fieldset = false
         @fieldsets.values.each { |fieldset|
@@ -450,9 +468,10 @@ module GUI
         @element_map.update(form_field_element.element_map)
         @elements  << form_field_element
         @fieldsets[form_field_element.name.to_s] = form_field_element
-      else
+      elsif form_field_element.respond_to?(:is_form_field) then
         field_name = form_field_element.name.to_s
         form_field_element.value = @values[field_name] unless form_field_element.value.to_s != ''
+        form_field_element.hint  = @hints[field_name] if (@hints && !form_field_element.hint)
         if !form_field_element.dom_id then
           form_field_element.dom_id = field_name.gsub('.','_')
         end
@@ -465,6 +484,8 @@ module GUI
         }
         @element_map[field_name] = form_field_element unless delegated_to_fieldset
         @elements << form_field_element
+      else
+        raise ArgumentError.new("Only instances of Aurita::GUI::Fieldset or Aurita::GUI::Form_Field can be added to a form (Given: #{form_field_element.inspect} ")
       end
       @content = false # Invalidate
     end
@@ -536,6 +557,35 @@ module GUI
     end
     alias set_field_config fields=
 
+    # Helper method to add hints for fields in this form, so it does 
+    # not have to be done for each field manually. 
+    # 
+    # Example: 
+    #
+    #   form.add(Text_Field.new(:name => :username))
+    #   form.add(Password_Field.new(:name => :pass))
+    #   form.add(Password_Field.new(:name => :pass_confirm))
+    #
+    #   form.hints = { :username     => 'This will also be your login', 
+    #                  :pass         => 'Must be at least 8 characters long', 
+    #                  :pass_confirm => 'Repeat your password' }
+    #
+    #
+    # By default, hints will be rendered as a div with css 
+    # class "hint" in HTML, right beneath the form field. It is 
+    # up to CSS and Javascript to define their appearance and 
+    # behaviour. 
+    #
+    def hints=(hints)
+      @hints = hints
+      hints.each_pair { |field_name, hint|
+        field = @element_map[field_name.to_s]
+        field.hint = hint if field
+      }
+    end
+    alias set_hint_config hints=
+    alias set_hints hints=
+
     # Set field values for this form. 
     # Expects hash mapping field names to values. 
     # Example: 
@@ -573,6 +623,10 @@ module GUI
     # Return underlying HTML element instance (HTML.ul), 
     # without wrapping HTML.form element. 
     def content
+  
+    # TODO: Find out if @content can be cached here. 
+    # return @content if @content
+
       @content = []
       if @title then
         @content << HTML.h1(:class => :form_title) { @title }
@@ -614,6 +668,13 @@ module GUI
       fields_id = dom_id().to_s+'_fields' if dom_id()
       @content = @content_decorator.new(:id => fields_id) { @content }
       return @content
+    end
+    alias build content
+
+    def rebuild
+      @content = false
+      touch()
+      build()
     end
 
     # Render this form to an HTML.form instance. 
@@ -668,6 +729,14 @@ module GUI
       field_names.each { |field|
         @element_map[field.to_s].readonly!
       }
+    end
+
+    # Returns javascript init code collected from all elements. 
+    #
+    def script
+      @elements.map { |e|
+        e.script if e.respond_to?(:script)
+      }.join("")
     end
 
   end

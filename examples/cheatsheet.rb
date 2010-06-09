@@ -26,6 +26,10 @@ t1 = HTML.build {
 puts t1.to_s
 puts '-----------------------------------------'
 
+t1[:the_list].add_css_class(:simple_list)
+puts t1.to_s
+puts '-----------------------------------------'
+
 # Note that all method calls are redirected to 
 # class HTML, so this won't work as expected: 
 
@@ -57,12 +61,10 @@ HTML.build {
 # following: 
 t2 = HTML.div(:class => :css_class, 
               :onmouseover => "do_something_with(this);") { 
-  HTML.ul(:id => :the_list) { 
-    [ 
-      HTML.li(:class => :first) { 'foo' }, 
-      HTML.li(:class => :second) { 'bar' }, 
+  HTML.ul(:id => :the_list, :class => :simple_list) { 
+      HTML.li(:class => :first) { 'foo' } + 
+      HTML.li(:class => :second) { 'bar' } + 
       HTML.li(:class => :third) { 'batz' }
-    ]
   }
 }
 assert_equal(t1.to_s, t2.to_s)
@@ -70,24 +72,23 @@ assert_equal(t1.to_s, t2.to_s)
 # Element is not a full Enumerable implementation (yet), 
 # but it offers random access operators ...
 
-assert_equal(t1[0].tag, :ul)  # First element of div is <ul>
+assert_equal(t1[0].tag, :div)  # First element of div is <div>
+assert_equal(t1[0][0].tag, :ul)  # First element of div is <div>
 
-t1[0][1] = HTML.li(:class => :changed) { 'wombat' }
-puts t1.to_s
+t2[0][1] = HTML.li(:class => :changed) { 'wombat' }
+puts t2.to_s
 puts '-----------------------------------------'
 
 # ... as well as #each ... 
 
-t1[0].each { |element|
-  element.id = 'each_change'
-}
-
-puts t1.to_s
+# t1[0].each { |element|
+#  element.id = 'each_change'
+# }
 
 # ... empty? and length. More to come in future releases. 
 
-assert_equal(t1[0].length, 3) # List has 3 entries
-assert_equal(t1[0].empty?, false) # List has 3 entries
+assert_equal(t2[0].length, 3)     # List has 3 entries
+assert_equal(t2[0].empty?, false) # List is not empty
 
 
 #== Form generation
@@ -131,9 +132,9 @@ assert_equal(form[0], text)
 # This is useful! 
 form[:description].value = 'change value'
 
-checkbox = Checkbox_Field.new(:name => :enable_me, 
-                              :value => :foo, 
-                              :label => 'Check me', 
+checkbox = Checkbox_Field.new(:name    => :enable_me, 
+                              :value   => :foo, 
+                              :label   => 'Check me', 
                               :options => [ :foo, :bar ] )
 form.add(checkbox)
 puts form.to_s

@@ -152,6 +152,16 @@ module GUI
       elements
     end
 
+    def select_field(select_options)
+      field_name = @select_field_name || "#{@attrib[:name]}_select"
+      base_id    = "#{@attrib[:id]}_select" if @attrib[:id]
+      base_id  ||= "#{@attrib[:name]}_select"
+      select_field = @select_field_class.new(:id      => base_id, 
+                                             :options => select_options, 
+                                             :parent  => self, 
+                                             :name    => field_name)
+    end
+
     # Renders list of active options, as well 
     # as select field element containing additionally 
     # available options. 
@@ -167,15 +177,6 @@ module GUI
         end
       }
       select_options.fields = select_option_ids 
-
-      base_id   = "#{@attrib[:id]}_select" if @attrib[:id]
-      base_id ||= "#{@attrib[:name]}_select"
-      
-      select_field = @select_field_class.new(:id      => base_id, 
-                                             :options => select_options, 
-                                             :parent  => self, 
-                                             :name    => "#{@attrib[:name]}_select" ) 
-      
       
       HTML.div(@attrib) { 
         HTML.ul(:id => "#{@options_name}_selected_options") { 
@@ -183,7 +184,7 @@ module GUI
             option_elements()
           end
         } + 
-        select_field
+        select_field(select_options)
       }
     end
 

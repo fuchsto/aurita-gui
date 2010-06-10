@@ -448,7 +448,7 @@ module GUI
       touch()
       super(index,element) if (index.is_a? Numeric)
       e = find_by_dom_id(index) 
-      e.swap(element)
+      e.swap(element) if e
     end
 
     # Copy constructor. Replace self with 
@@ -494,9 +494,9 @@ module GUI
           elsif value.instance_of?(TrueClass) then
             value = name
           else
-            value = value.to_s
+            value = value.to_s unless value.nil?
           end
-          if !value.empty? then
+          if !value.nil? then # Empty attribute values are allowed, as in <option value="">label</option>
             value = value.to_s.gsub('"','\"')
             attrib_string << " #{name}=\"#{value}\""
           end

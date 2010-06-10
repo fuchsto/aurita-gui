@@ -151,15 +151,34 @@ module GUI
 
     # Virtual method. 
     def element
-      raise Form_Error.new('Form_Field@element not set for ' << self.inspect) unless @element
-      @element
+      return @element if @element
+      raise Form_Error.new('Form_Field@element and Form_Field#element() not defined for ' << self.inspect) 
+    end
+    def decorated_element
+      element()
+    end
+
+    # After changing a form field's attribute after having it rendered once, 
+    # you have to touch it when rendering it again so the changes take effect. 
+    # Example: 
+    #
+    #   field = Input_Field.new(:name => :the_name)
+    #   puts field.to_s
+    #
+    #   field.name = :changed
+    #   field.touch
+    #
+    #   puts field.to_s
+    #
+    def touch
+      super()
+      @element = false
     end
 
     # Render this form field element to a 
     # readonly element. 
     # Will not affect this element instance. 
     def readonly_element
-      # Todo: Add CSS classes 'readonly' and self.class
       HTML.div(@attrib) { @value }
     end
 

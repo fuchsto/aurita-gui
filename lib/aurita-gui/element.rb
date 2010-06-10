@@ -14,6 +14,12 @@ class Array
 
 end
 
+class Symbol
+  def empty?
+    false
+  end
+end
+
 module Aurita
 module GUI
     
@@ -281,7 +287,7 @@ module GUI
       (length > 0)
     end
     def empty? 
-      !has_content
+      (length == 0)
     end
 
     # Alias definition for #dom_id=(value)
@@ -398,7 +404,7 @@ module GUI
         end
         return self
       else
-        return @attrib[meth] unless value or meth.to_s.include? '='
+        return @attrib[meth] unless (value || meth.to_s.include?('='))
         @attrib[meth.to_s.gsub('=','').intern] = value
       end
     end
@@ -425,14 +431,16 @@ module GUI
 
     # Do not redirect random access operators. 
     def [](index)
-      return super(index) if (index.is_a?(Fixnum))
+      return super(index) if (index.is_a?(Numeric))
       return find_by_dom_id(index) 
     end
 
     # Retreive an element from object tree by 
     # its dom_id
     def find_by_dom_id(dom_id)
-      dom_id = dom_id.to_sym
+      return unless dom_id
+      
+      dom_id = dom_id.to_sym 
       each { |c|
         if c.is_a? Element then
           return c if (c.dom_id == dom_id)
@@ -445,6 +453,14 @@ module GUI
 
     # Do not redirect random access operators. 
     def []=(index,element)
+      if (index.is_a? Numeric) then
+        if __getobj__[index].is_a?(Element)
+          __getobj__[index].swap(element) 
+        end
+      else
+        e = find_by_dom_id(index) 
+        e.swap(element)
+      end
       touch()
       super(index,element) if (index.is_a? Numeric)
       e = find_by_dom_id(index) 

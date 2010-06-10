@@ -7,7 +7,7 @@ include Aurita::GUI
 x = HTML.build { 
      div.main { 
        h2.header { 'Title' } + 
-       div.lead { 'Intro here' } + 
+       div(:id => :lead).lead { 'Intro here' } + 
        div.body { 
          p.section { 'First' } + 
          p.section { 'Second' } + 
@@ -19,3 +19,7 @@ x = HTML.build {
 x.recurse { |element| 
   p element.css_class
 }
+
+x[:lead].add_css_class(:foo)
+
+puts x.to_s

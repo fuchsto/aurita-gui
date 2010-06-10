@@ -459,7 +459,7 @@ module GUI
         end
       else
         e = find_by_dom_id(index) 
-        e.swap(element)
+        e.swap(element) if e
       end
       touch()
     end
@@ -667,6 +667,9 @@ module GUI
       self
     end
 
+    def flatten! 
+    end
+
     # Element instances always are sane, as 
     # they are encoding non-sanitized content 
     # automatically when being rendered to a 
@@ -689,11 +692,6 @@ module GUI
     # always are sane. 
     #
     def sanitize! 
-      self
-    end
-
-    # To avoid memory leak
-    def flatten
       self
     end
 

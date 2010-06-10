@@ -397,7 +397,10 @@ module GUI
     def []=(index, form_field)
       @content = false # Invalidate
 
-      form_field.hint  = @hints[form_field.name.to_s] if (@hints && !form_field.hint)
+      begin
+        form_field.hint = @hints[form_field.name.to_s] if (@hints && !form_field.hint)
+      rescue ::Exception => e
+      end
 
       if !index.kind_of? Numeric
         delegated_to_fieldset = false
@@ -577,11 +580,11 @@ module GUI
     # behaviour. 
     #
     def hints=(hints)
-      @hints = hints
       hints.each_pair { |field_name, hint|
         field = @element_map[field_name.to_s]
         field.hint = hint if field
       }
+      @hints = hints
     end
     alias set_hint_config hints=
     alias set_hints hints=

@@ -19,6 +19,8 @@ require('aurita-gui/form/boolean_field')
 require('aurita-gui/form/text_field')
 require('aurita-gui/form/password_field')
 require('aurita-gui/form/selection_list')
+require('aurita-gui/form/form_button')
+require('aurita-gui/form/submit_button')
 
 module Aurita
 module GUI
@@ -353,15 +355,16 @@ module GUI
     attr_reader :fieldsets
   
     def initialize(params={}, &block)
-      @fields        = params[:fields]
-      @values        = params[:values]
-      @fields      ||= []
-      @elements      = []
-      @element_map   = {}
-      @fieldsets     = {}
-      @values      ||= {}
-      @title         = false
-      @custom_fields = false
+      @fields        ||= params[:fields]
+      @buttons       ||= false
+      @values        ||= params[:values]
+      @fields        ||= []
+      @elements      ||= []
+      @element_map   ||= {}
+      @fieldsets     ||= {}
+      @values        ||= {}
+      @title         ||= false
+      @custom_fields ||= false
       @field_decorator   = Aurita::GUI::Form_Field_Wrapper
       @content_decorator = Aurita::GUI::Form_Content_Wrapper
       if block_given? then
@@ -471,6 +474,9 @@ module GUI
         @element_map.update(form_field_element.element_map)
         @elements  << form_field_element
         @fieldsets[form_field_element.name.to_s] = form_field_element
+      elsif form_field_element.respond_to?(:is_form_button) then
+        @buttons ||= []
+        @buttons << form_field_element
       elsif form_field_element.respond_to?(:is_form_field) then
         field_name = form_field_element.name.to_s
         form_field_element.value = @values[field_name] unless form_field_element.value.to_s != ''
@@ -488,7 +494,7 @@ module GUI
         @element_map[field_name] = form_field_element unless delegated_to_fieldset
         @elements << form_field_element
       else
-        raise ArgumentError.new("Only instances of Aurita::GUI::Fieldset or Aurita::GUI::Form_Field can be added to a form (Given: #{form_field_element.inspect} ")
+        raise ArgumentError.new("Only instances of Aurita::GUI::Fieldset, Aurita::GUI::Form_Button or Aurita::GUI::Form_Field can be added to a form (Given: #{form_field_element.inspect} ")
       end
       @content = false # Invalidate
     end
@@ -683,7 +689,9 @@ module GUI
     # Render this form to an HTML.form instance. 
     # Wraps result of #content. 
     def element
-      HTML.form(@attrib) { content() }
+      c = content()
+      c = [ c + HTML.div.form_button_bar { @buttons } ] if @buttons
+      HTML.form(@attrib) { c }
     end
 
     # Returns opening tag of this form instance. 

@@ -43,6 +43,8 @@ module GUI
 
   end
 
+=begin
+
   # Specialization of Aurita::GUI::Element for 
   # submit buttons. Set @tag to :input, @type to :submit. 
   # Block argument will be used as button label (:value)
@@ -51,9 +53,9 @@ module GUI
   #   b = Submit_Button.new(:class => :css_class) { 'click me' }
   #
   class Submit_Button < Button
-    def initialize(params, &block)
-      params[:tag]  = :input
-      params[:type] = :submit unless params[:type]
+    def initialize(params={}, &block)
+      params[:tag]  ||= :input
+      params[:type] ||= :submit unless params[:type]
       if block_given? then
         params[:value] = yield
       end
@@ -80,6 +82,8 @@ module GUI
       super(params)
     end
   end
+
+=end
 
 end
 end

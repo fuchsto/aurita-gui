@@ -242,14 +242,14 @@ module GUI
     def method_missing(meth, value=nil, &block)
       touch()
       if block_given? then
-        @attrib[:tag] = "#{@attrib[:tag]}:#{meth}"
+        @tag = "#{@tag}:#{meth}"
         @attrib.update(value) if value.is_a? Hash
         c = yield
         c = [ c ] unless c.is_a?(Array)
         __setobj__(c)
         return self
       elsif !value.nil? && !meth.to_s.include?('=') then
-        @attrib[:tag] = "#{@attrib[:tag]}:#{meth}"
+        @tag = "#{@tag}:#{meth}"
         case value
         when Hash then
           @attrib.update(value)

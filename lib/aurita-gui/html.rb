@@ -287,22 +287,13 @@ module GUI
     end
     
     def self.render(meth_name, *args, &block)
-      raise ::Exception.new('Missing attributes for HTML.' << meth_name.inspect) unless args
       e = Element.new(*args, &block)
       e.tag = meth_name
       e
     end
 
     def self.build(&block)
-      raise ::Exception.new('Missing block for HTML.render') unless block_given?
       Element.new(:tag => :pseudo) { self.class_eval(&block) }
-    end
-    
-    # p is defined in Kernel, so we have to 
-    # redirect it manually (method_missing won't be 
-    # triggered for it)
-    def self.p(*attribs, &block)
-      render(:p, *attribs, &block)
     end
 
     def self.method_missing(meth_name, *attribs, &block)
@@ -344,17 +335,19 @@ module GUI
       t
     end
 
-=begin
-    XHTML_TAGS = [ :html, :div, :p, :input, :select, :option, :ul, :ol, :li ]
+    XHTML_TAGS = [ :html, :div, :p, :input, :select, :option, 
+                   :ul, :ol, :li, :title, :link, :a, :form, :fieldset, 
+                   :h1, :h2, :h3, :h4, :img ]
     for t in XHTML_TAGS do 
       meth = <<EOC
         def self.#{t.to_s}(*attribs, &block)
-          render(:#{t.to_s}, *attribs, &block)
+          e = Element.new(*attribs, &block)
+          e.tag = :#{t}
+          e
         end
 EOC
       class_eval(meth)
     end
-=end
 
   end # class
 

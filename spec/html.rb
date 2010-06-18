@@ -25,6 +25,7 @@ describe Aurita::GUI::HTML, "basic rendering" do
 
   it "should also accept the first constructor argument as content" do
     e = HTML.p 'I am the content' 
+    e.to_s.should == '<p>I am the content</p>'
     e.to_s.should == Element.new(:tag => :p) { 'I am the content' }.to_s
     e = HTML.div 'foo', :class => 'highlight'
     e.to_s.should == '<div class="highlight">foo</div>'

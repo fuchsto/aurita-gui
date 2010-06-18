@@ -26,6 +26,8 @@ describe Aurita::GUI::XML, "basic document generation" do
     xmldoc.content.to_s.should == '<og:page id="123"><title>The page title</title><text>Text</text><images><image url="birds.jpg" id="image_1" /><image url="flowers.jpg" id="image_2" /></images></og:page>'
     
     xmldoc.content[:image_1].url.should == 'birds.jpg'
+    xmldoc.content[:image_1].url = 'pets.jpg'
+    xmldoc.content[:image_1].url.should == 'pets.jpg'
   end
 
 end

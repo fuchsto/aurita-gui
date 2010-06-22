@@ -33,6 +33,17 @@ module GUI
       self.class.render(meth_name, *attribs, &block) 
     end
 
+    def cdata(str=nil, &block)
+      str ||= yield
+      "<![CDATA[#{str}]]>"
+    end
+
+    def comment(str=nil, &block)
+      str ||= yield
+      "<!-- #{str} -->"
+    end
+
+
     # A builder for XML documents. 
     # Example: 
     #

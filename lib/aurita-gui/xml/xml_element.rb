@@ -266,16 +266,6 @@ module GUI
       end
     end
 
-    def cdata(str=nil, &block)
-      str ||= yield
-      "<![CDATA[#{str}]]>"
-    end
-
-    def comment(str=nil, &block)
-      str ||= yield
-      "<!-- #{str} -->"
-    end
-
     # Set enclosed content of this element. 
     # Will be automatically wrapped in an array. 
     def set_content(obj)

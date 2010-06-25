@@ -313,7 +313,7 @@ module GUI
     def swap(other)
       touch()
       save_own_id = dom_id()
-      @tag = other.tag
+      @tag    = other.tag
       @attrib = other.attrib 
       @attrib[:id] = save_own_id
       __setobj__(other.get_content)

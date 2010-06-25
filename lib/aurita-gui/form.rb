@@ -479,7 +479,7 @@ module GUI
         @buttons << form_field_element
       elsif form_field_element.respond_to?(:is_form_field) then
         field_name = form_field_element.name.to_s
-        form_field_element.value = @values[field_name] unless form_field_element.value.to_s != ''
+        form_field_element.value = @values[field_name] if (form_field_element.value.nil? || form_field_element.value == '')
         form_field_element.hint  = @hints[field_name] if (@hints && !form_field_element.hint)
         if !form_field_element.dom_id then
           form_field_element.dom_id = field_name.gsub('.','_')
@@ -494,7 +494,7 @@ module GUI
         @element_map[field_name] = form_field_element unless delegated_to_fieldset
         @elements << form_field_element
       else
-        raise ArgumentError.new("Only instances of Aurita::GUI::Fieldset, Aurita::GUI::Form_Button or Aurita::GUI::Form_Field can be added to a form (Given: #{form_field_element.inspect} ")
+        raise ArgumentError.new("Only instances of Aurita::GUI::Fieldset, Aurita::GUI::Form_Button or Aurita::GUI::Form_Field[_Widget] can be added to a form (Given: #{form_field_element.inspect} ")
       end
       @content = false # Invalidate
     end
@@ -509,6 +509,7 @@ module GUI
     #   form.fields = [ :name, :description, :date ]
     #
     def fields=(attrib_array)
+
       touch()
       @custom_fields = true
       @fields = attrib_array.map { |field| 
@@ -555,7 +556,7 @@ module GUI
         end
       }
       @elements.each { |field|
-        if field.is_a?(Form_Field) then
+        if field.respond_to?(:is_form_field) then
           # Update element map only if referenced element is a 
           # Form_Field, do not include Fieldset elements. 
           @element_map[field.name.to_s] = field 
@@ -616,7 +617,7 @@ module GUI
     def fields()
       if !@custom_fields || @fields.length == 0 then
         @elements.each { |field|
-          if field.is_a?(Form_Field) then
+          if field.respond_to?(:is_form_field) then
             @fields << field.name
             @element_map[field.name.to_s] = field
           elsif field.is_a?(Fieldset) then

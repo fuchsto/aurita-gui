@@ -1,5 +1,6 @@
 
 require('aurita-gui/xml/xml_element')
+require('htmlentities')
 
 
 module Aurita
@@ -34,15 +35,20 @@ module GUI
     end
 
     def cdata(str=nil, &block)
-      str ||= yield
+      str ||= yield if block_given? 
       "<![CDATA[#{str}]]>"
     end
 
     def comment(str=nil, &block)
-      str ||= yield
+      str ||= yield if block_given?
       "<!-- #{str} -->"
     end
 
+    def decode_entities(str=nil, &block)
+      str ||= yield if block_given?
+      HTMLEntities.new.decode(str)
+    end
+    
 
     # A builder for XML documents. 
     # Example: 

@@ -181,6 +181,9 @@ module GUI
     def decorated_element
       element() 
     end
+    def decorated_readonly_element
+      readonly_element() 
+    end
 
     # After changing a form field's attribute after having it rendered once, 
     # you have to touch it when rendering it again so the changes take effect. 
@@ -222,6 +225,7 @@ module GUI
       return readonly_element().to_s
     end
     alias string to_s
+    alias to_str to_s
 
     # Set field element to editable mode. 
     # See Aurita::GUI::Form for more information 

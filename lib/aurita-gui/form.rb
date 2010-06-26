@@ -69,7 +69,12 @@ module GUI
     def initialize(field)
       label_params = false
       @field       = field
-      dec_field    = decorate_field(@field.decorated_element)
+      dec_field    = false
+      if field.readonly? then
+        dec_field    = decorate_field(@field.decorated_readonly_element)
+      else
+        dec_field    = decorate_field(@field.decorated_element)
+      end
       @content     = [ dec_field ]
 
       if field.label then

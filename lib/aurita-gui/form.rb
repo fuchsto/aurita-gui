@@ -61,7 +61,22 @@ module GUI
   #     end
   #   end
   #
-  # See also: Form_Content_Wrapper (pretty much the same). 
+  # Your field decorator could look like this: 
+  #
+  #   class My_Field_Decorator < Form_Field_Wrapper
+  #     def decorate_field(field)
+  #       HTML.div.decorated_field { field.decorated_element } 
+  #     end
+  #     
+  #     def decorate_hint(hint)
+  #       HTML.div.decorated_hint { hint } 
+  #     end
+  #   end
+  #
+  # You now have a handy procedure for creating custom forms. 
+  #
+  # See also: Form_Content_Wrapper (pretty much the same), which 
+  # decorates the list of all form fields within a form. 
   #
   class Form_Field_Wrapper < Aurita::GUI::Element
     attr_accessor :field
@@ -104,10 +119,18 @@ module GUI
       super(params)
     end
 
+    # When implementing your own form field decoration, subclass 
+    # Form_Field_Wrapper and overload #decorate_field(field) to 
+    # return the decorated form field. 
+    #
     def decorate_field(field)
       field
     end
 
+    # When implementing your own form field decoration, subclass 
+    # Form_Field_Wrapper and overload #decorate_hint(hint) to 
+    # return the decorated form field hint. 
+    #
     def decorate_hint(hint)
       hint
     end

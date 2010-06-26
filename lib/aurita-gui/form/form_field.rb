@@ -92,9 +92,29 @@ module GUI
   # So far, Form_Field@data_type won't be interpreted by 
   # any part of Aurita::GUI. 
   #
+  # To create a static, custom form field, provide a static element: 
+  #
+  #   my_form_element = HTML.div { 'hi there' }
+  #   placeholder = Form_Field.new(:name => :placeholder_name) { 
+  #                   my_form_element
+  #                 }
+  #
+  # You can then modify your element using Form_Field#static_element: 
+  #
+  #   placeholder.static_element = HTML.div { 'something else' }
+  #
+  # With a form, this works as usual: 
+  #
+  #   form.add(placeholder)
+  #   form[:placeholder_name].static_element = HTML.div { 'changed' }
+  #
+  # Replacing your placeholder works like usual (see docs for GUI::Form):
+  #
+  #   form[:placeholder_name] = Input_Field(:name => :placeholder_name)
+  #
   class Form_Field < Element
 
-    attr_accessor :type, :form, :label, :value, :required, :hidden, :data_type, :invalid, :hint, :name
+    attr_accessor :type, :form, :label, :value, :required, :hidden, :data_type, :invalid, :hint, :name, :static_element
 
     def initialize(params, &block)
       # @value  = params[:value]
@@ -127,12 +147,9 @@ module GUI
       params.delete(:hint)
       params[:parent] = @form
       if block_given? then 
-        @element = yield
-        if @readonly then
-          params[:content] = readonly_element()
-        else
-          params[:content] = @element 
-        end
+        # Static element won't be invalidated on touch()
+        @static_element = yield
+        @element        = @static_element
       end
       super(params)
     end
@@ -158,7 +175,8 @@ module GUI
     # Virtual method. 
     def element
       return @element if @element 
-      raise Form_Error.new('Form_Field@element and Form_Field#element() not defined for ' << self.inspect) 
+      return @static_element if @static_element 
+      raise Form_Error.new("Form_Field@element and Form_Field#element() not defined (#{@element.inspect}) for #{self.inspect}") 
     end
     def decorated_element
       element() 

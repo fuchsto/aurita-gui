@@ -119,23 +119,23 @@ module GUI
     def initialize(params, &block)
       # @value  = params[:value]
       raise Form_Error.new('Must provide parameter :name for ' << self.class.to_s) unless params[:name]
-      @form       = params[:parent]
-      @form     ||= params[:form]
-      @label      = params[:label]
+      @form      ||= params[:parent]
+      @form      ||= params[:form]
+      @label       = params[:label]
       # Get value from params unless set by derived constructor: 
-      @value    ||= params[:value] 
-      @required   = params[:required]
-      @hidden     = params[:hidden]
-      @data_type  = params[:data_type]
-      @invalid    = params[:invalid]
-      @hint       = params[:hint]
+      @value     ||= params[:value] 
+      @required  ||= params[:required]
+      @hidden    ||= params[:hidden]
+      @data_type ||= params[:data_type]
+      @invalid   ||= params[:invalid]
+      @hint      ||= params[:hint]
       # Do not delete parameter value, as it is a 
       # standard for <input> elements. 
       # Field types not supporting the value attribute
       # (Textarea_Field, Option_Field, ...)
       # must delete it themselves. 
-      @readonly   = params[:readonly]
-      @readonly ||= false
+      @readonly  ||= params[:readonly]
+      @readonly  ||= false
       params.delete(:form)
       params.delete(:parent)
       params.delete(:label)
@@ -213,10 +213,12 @@ module GUI
     # Hidden_Field instance. Will not affect 
     # this element instance. 
     def to_hidden_field
+      value   = @value
+      value ||= @attrib[:value]
       Hidden_Field.new(:type  => :hidden, 
                        :name  => @attrib[:name], 
                        :id    => dom_id.to_s, 
-                       :value => @value)
+                       :value => value)
     end
 
     # Render this form field element to string. 

@@ -26,6 +26,16 @@ module GUI
       super(params, &block)
     end
 
+    # Set years that are available for selection. 
+    # Example: 
+    #
+    #   my_date_field.year_range = (2010..2020)
+    #
+    def year_range=(range)
+      @year_range = range
+      touch
+    end
+
     def year_element
       if !@year_element then
         @year_element = Select_Field.new(:name  => @attrib[:name].to_s + '_year', 

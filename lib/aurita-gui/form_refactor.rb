@@ -381,9 +381,6 @@ module GUI
     # Array of fieldsets in this form, ordered by appearance in 
     # the form. 
     attr_reader :fieldsets
-
-    # Read / write access to the form's buttons
-    attr_accessor :buttons
   
     def initialize(params={}, &block)
       @fields        ||= params[:fields]

@@ -234,7 +234,7 @@ module GUI
     # from children, including own. 
     def script
       scr = ''
-      scr << js_initialize()
+      scr << js_initialize().to_s
       @content.each { |c|
         if c.respond_to?(:script) then
           c_script  = c.script

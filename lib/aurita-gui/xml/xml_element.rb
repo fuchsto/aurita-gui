@@ -84,7 +84,7 @@ module GUI
       params.delete(:content)
       params.delete(:tag)
       
-      @attrib = params
+      @attrib ||= params
 
       super(@content)
     end

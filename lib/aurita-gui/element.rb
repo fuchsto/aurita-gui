@@ -235,9 +235,9 @@ module GUI
     def script
       scr = ''
       scr << js_initialize().to_s
-      @content.each { |c|
+      __getobj__.each { |c|
         if c.respond_to?(:script) then
-          c_script  = c.script
+          c_script = c.script
           scr << c_script
         end
       }

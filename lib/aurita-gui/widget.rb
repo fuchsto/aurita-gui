@@ -113,6 +113,8 @@ module GUI
       # Method #each is delegated to element 
       scr << "\n"
       each { |c| 
+        # Note that Array#script is defined 
+        # in element.rb
         if c.respond_to?(:script) then
           scr << c.script 
         end

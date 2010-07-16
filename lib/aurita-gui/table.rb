@@ -126,7 +126,8 @@ module GUI
       if @headers.length > 0 then
         t = HTML.tr { @headers.collect { |cell| if cell.is_a? Element then cell else HTML.th { cell } end } }  
       end
-      t += rows()
+      body_id = "#{@attrib[:id]}_body" if @attrib[:id]
+      t += HTML.tbody(:id => body_id) { rows() }
       set_content(t)
       super()
     end

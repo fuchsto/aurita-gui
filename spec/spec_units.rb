@@ -13,13 +13,15 @@ class Box < Widget
     @opened ||= false
     @id       = params[:id]
     @box_content  = yield if block_given? 
+    @box_content ||= ''
     super()
   end
 
   def element
     HTML.div(:id => @id).box { 
       HTML.div.content() {
-        "#{@box_content} @opened is #{@opened}" 
+        @box_content + 
+        HTML.span { "@opened is #{@opened}" }
       } 
     }
   end

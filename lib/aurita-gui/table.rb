@@ -102,11 +102,16 @@ module GUI
     alias set_column_css_classes column_css_classes=
 
     def add_row(*row_data)
-      if row_data.first.is_a?(Array) then
+      if row_data.first.is_a?(Array) || row_data.first.is_a?(Table_Row) then
         row_data = row_data.first
       end
-      # TODO: This should happen in #string
-      row = @row_class.new(row_data, :parent => self)
+      row = row_data
+      
+      if !row.respond_to?(:string) then
+        row = @row_class.new(row_data, :parent => self)
+      else 
+        row.parent = self
+      end
       @rows << row
 
       # Add row content to columns
@@ -170,13 +175,17 @@ module GUI
 
     def initialize(*args, &block)
 
+      if args[0].is_a?(Hash) then
+        params    = args[0]
+      end
+
       if block_given? then
         cell_data = yield
-        params    = args[0]
-      else
+      elsif args[0].is_a?(Array) then
         cell_data = args[0]
         params    = args[1]
       end
+      
       params  ||= {}
       params[:tag]  = :tr
 
@@ -188,7 +197,10 @@ module GUI
       column_index  = 0
 
       @cell_data.each { |cell|
-        @cells << @cell_class.new(cell, :parent => self, :column_index => column_index)
+        if !cell.kind_of?(Table_Cell) then
+          cell = @cell_class.new(cell, :parent => self, :column_index => column_index)
+        end
+        @cells << cell
         column_index += 1
       }
       set_content(@cells)
@@ -197,11 +209,11 @@ module GUI
       super(params)
       add_css_classes(@parent.row_css_classes) if @parent && @parent.row_css_classes.length > 0
     end
-
+    
     def table
       @parent
     end
-
+    
     def [](column_index)
       @cells[column_index]
     end
@@ -209,7 +221,7 @@ module GUI
       touch()
       @cells[column_index].value = cell_data
     end
-
+    
     def string
       if touched? then
         @cells = []
@@ -278,7 +290,7 @@ module GUI
     end
 
     def inspect
-      'Cell[' << @value + ']'
+      "Cell[#{@value}]"
     end
 
   end

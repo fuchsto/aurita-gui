@@ -140,7 +140,7 @@ module GUI
       # values and return the resulting option array field, not
       # write those changes back to @option_values and @option_labels. 
       opt_values = @option_values.map { |v| v.to_s }
-      opt_labels = @option_labels.map { |v| v.to_s }
+      opt_labels = @option_labels.map { |v| (v.respond_to?(:each_pair))? v : v.to_s }
 
       if @option_labels.length == 0
         opt_labels = opt_values.map { |v| '' } 

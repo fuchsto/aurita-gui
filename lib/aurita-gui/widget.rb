@@ -211,12 +211,12 @@ module GUI
       @params[:id] if @params
     end
 
-    alias delegate_str to_s
     def string
       return rebuild.to_s if @touched
       delegate_str
     end
     alias to_s string
+    alias delegate_str to_s
     alias to_str string
     alias to_string string
 

@@ -34,14 +34,19 @@ module GUI
       self.class.render(meth_name, *attribs, &block) 
     end
 
+    def self.cdata(str=nil, &block)
+      str ||= yield if block_given? 
+      "<![CDATA[#{str}]]>".sanitized
+    end
+
     def cdata(str=nil, &block)
       str ||= yield if block_given? 
-      "<![CDATA[#{str}]]>"
+      "<![CDATA[#{str}]]>".sanitized
     end
 
     def comment(str=nil, &block)
       str ||= yield if block_given?
-      "<!-- #{str} -->"
+      "<!-- #{str} -->".sanitized
     end
 
     def decode_entities(str=nil, &block)

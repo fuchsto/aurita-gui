@@ -98,7 +98,7 @@ module GUI
         @params.each_pair { |k,v|
           params << "#{k}=\"#{v}\" "
         }
-        "<?xml #{params} ?>\n#{@content.to_s}"
+        "<?xml version=\"#{@params[:version]}\" encoding=\"#{@params[:encoding]}\" ?>\n#{@content.to_s}"
       end
       alias to_s string
       alias to_str string

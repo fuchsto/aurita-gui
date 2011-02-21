@@ -35,7 +35,7 @@ module GUI
   #
   class Table < Element
 
-    attr_accessor :columns, :headers, :rows, :template, :row_css_classes, :column_css_classes, :row_class, :row_css_class_seq
+    attr_accessor :columns, :headers, :rows, :template, :row_css_classes, :column_css_classes, :row_class, :row_css_class_seq, :decorators
 
     def initialize(params={}, &block)
       params[:tag]   = :table
@@ -57,6 +57,7 @@ module GUI
       @column_css_classes   = params[:column_css_classes]
       @column_css_classes ||= []
       @column_css_classes   = [ @column_css_classes ] unless @column_css_classes.is_a?(Array)
+      @decorators         ||= {}
       params[:cellpadding]  = 0 unless params[:cellpadding]
       params[:cellspacing]  = 0 unless params[:cellspacing]
       params.delete(:headers)
@@ -77,6 +78,10 @@ module GUI
       else
         super(params)
       end
+    end
+
+    def decorate(column_index, &block)
+      @decorators[column_index] = block
     end
 
     def headers=(*headers)
@@ -218,8 +223,8 @@ module GUI
       @cells[column_index]
     end
     def []=(column_index, cell_data)
-      touch()
       @cells[column_index].value = cell_data
+      touch()
     end
     
     def string
@@ -236,7 +241,7 @@ module GUI
     end
 
     def inspect
-      'Row[' << @cells.collect { |c| c.inspect }.join(',') + ']'
+      "#{self.class}[" << @cells.collect { |c| c.inspect }.join(',') + ']'
     end
   end
 
@@ -267,17 +272,19 @@ module GUI
 
     def initialize(cell_element, params={})
       params[:tag]          = :td
+      @parent             ||= params[:parent]
+      @decorator            = @parent.parent.decorators[@column_index] if @parent.parent.respond_to?(:decorators)
+      @decorator          ||= false
       @content            ||= cell_element
       @value              ||= cell_element
       @presentation_class ||= false
       @column_index         = params[:column_index]
-      @parent             ||= params[:parent]
       params.delete(:column_index)
       super(params)
       column_css_classes = @parent.parent.column_css_classes[@column_index] if @parent.parent
       add_css_classes(column_css_classes) if column_css_classes
     end
-
+    
     def set_presentation(presentation_class)
       @presentation_class = presentation_class
     end
@@ -285,12 +292,14 @@ module GUI
 
     def value=(val)
       @value = val
+      @value = @decorator.call(@value) if @decorator
       set_content(@value) unless @presentation_class
       set_content(@presentation_class.new(@value)) if @presentation_class
+      touch()
     end
 
     def inspect
-      "Cell[#{@value}]"
+      "#{self.class}[#{value.inspect}]"
     end
 
   end

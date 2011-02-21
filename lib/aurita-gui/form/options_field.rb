@@ -25,9 +25,11 @@ module GUI
   #
   # Set a selected value using parameter :value
   #
-  #   r = Radio_Field.new(:value => 42, :name => :amount, 
-  #                       :label => 'Select amount')
-  #   r.value = 23
+  #   r = Radio_Field.new(:value         => 30, 
+  #                       :name          => :amount, 
+  #                       :option_values => [ 10, 20, 30 ],
+  #                       :label         => 'Select amount')
+  #   r.value = 20
   #
   # If there may be more than one selected field, e.g. for Checkbox_Field, 
   # @value is an Array instance: 

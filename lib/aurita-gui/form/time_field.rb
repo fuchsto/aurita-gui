@@ -30,6 +30,7 @@ module GUI
         options = (0..23)
         options = options.to_a.map { |e| (e < 10)? ('0' << e.to_s) : e.to_s }
         @hour_element = Select_Field.new(:name  => @attrib[:name].to_s + '_hour', 
+                                         :id    => @attrib[:name].to_s + '_hour', 
                                          :class => :hour_select, 
                                          :value => @hour, :options => options)
       end
@@ -41,6 +42,7 @@ module GUI
         options ||= (0..59)
         options = options.to_a.map { |e| (e < 10)? ('0' << e.to_s) : e.to_s }
         @minute_element = Select_Field.new(:name  => @attrib[:name].to_s + '_minute', 
+                                           :id    => @attrib[:name].to_s + '_minute', 
                                            :class => :minute_select, 
                                            :value => @minute, :options => options)
       end
@@ -51,6 +53,7 @@ module GUI
         options = (0..59)
         options = options.to_a.map { |e| (e < 10)? ('0' << e.to_s) : e.to_s }
         @second_element = Select_Field.new(:name  => @attrib[:name].to_s + '_second', 
+                                           :id    => @attrib[:name].to_s + '_second', 
                                            :class => :second_select, 
                                            :value => @second, :options => options)
       end

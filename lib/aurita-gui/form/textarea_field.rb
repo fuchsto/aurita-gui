@@ -18,6 +18,9 @@ module GUI
       @attrib[:force_closing_tag] = true
       HTML.textarea(@attrib) { @value.to_s }
     end
+    def readonly_element
+      @value.to_s
+    end
 
   end
   

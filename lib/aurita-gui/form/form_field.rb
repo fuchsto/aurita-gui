@@ -173,6 +173,14 @@ module GUI
     end
 
     # Virtual method. 
+    # Overload this method to return the actual form field element, like 
+    #
+    #
+    #   def element
+    #     HTML.input(:name => :myfield, :type => :text, :value => 'Default') + 
+    #     HTML.div { 'Some hint perhaps' }
+    #   end
+    #
     def element
       return @element if @element 
       return @static_element if @static_element 
@@ -183,6 +191,20 @@ module GUI
     end
     def decorated_readonly_element
       readonly_element() 
+    end
+
+    def script
+      # Overload Element.script, as it uses __getobj__ to resolve its child 
+      # elements' scripts. 
+      # In Form_Element, the method #element is generating the actual GUI 
+      # element representation, and set_content is actually never used, 
+      # so __getobj__ will always be an empty array. 
+      #
+      scr = ''
+      scr << js_initialize().to_s
+      scr << element.script().to_s
+      scr << js_finalize().to_s
+      scr
     end
 
     # After changing a form field's attribute after having it rendered once, 
@@ -228,7 +250,7 @@ module GUI
     end
     alias string to_s
     alias to_str to_s
-
+    
     # Set field element to editable mode. 
     # See Aurita::GUI::Form for more information 
     # on rendering modes. 

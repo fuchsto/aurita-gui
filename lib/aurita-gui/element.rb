@@ -215,6 +215,7 @@ module GUI
       else
         return @attrib[meth] unless (value || meth.to_s.include?('='))
         @attrib[meth.to_s.gsub('=','').intern] = value
+        touch()
       end
     end
 

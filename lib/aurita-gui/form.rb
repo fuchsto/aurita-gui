@@ -396,6 +396,7 @@ module GUI
       @values        ||= {}
       @title         ||= false
       @custom_fields ||= false
+      @script          = false
       @field_decorator   = Aurita::GUI::Form_Field_Wrapper
       @content_decorator = Aurita::GUI::Form_Content_Wrapper
       if block_given? then
@@ -505,6 +506,7 @@ module GUI
 
     def touch()
       @content = false
+      @script  = false
       super
     end
 
@@ -655,6 +657,12 @@ module GUI
     end
     alias set_values values=
 
+    # Update form values, but only for fields 
+    # that have no value yet (useful for filling 
+    # in default form values). 
+    #
+    # Expects hash as field name => value. 
+    #
     def set_values_if_missing(value_hash={})
       touch()
       @values.each_pair { |field_name, value|
@@ -719,6 +727,10 @@ module GUI
             if element.kind_of? Aurita::GUI::Hidden_Field then
               @content << element
             else
+              @script ||= ''
+              STDERR.puts "FORM.content: Element #{element.dom_id} => #{element.inspect}"
+              STDERR.puts "SCRIPT: #{element.script}"
+              @script  << element.script
               @content << @field_decorator.new(element)
             end
           end
@@ -803,9 +815,18 @@ module GUI
     # Returns javascript init code collected from all elements. 
     #
     def script
-      @elements.map { |e|
-        (e && !e.hidden? && !e.readonly? && e.respond_to?(:script))? e.script : ''
-      }.join("")
+      content() unless @script
+      return @script
+      
+      # return content().script
+      
+      # This is wrong, as not all elements in @elements are guaranteed
+      # to be finally rendered at all (elements can be skipped by setting
+      # form.fields)
+      # 
+      # @elements.map { |e|
+      #   (e && !e.hidden? && !e.readonly? && e.respond_to?(:script))? e.script : ''
+      # }.join("")
     end
 
   end

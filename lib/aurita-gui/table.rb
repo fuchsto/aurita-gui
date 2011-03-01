@@ -102,7 +102,6 @@ module GUI
     def column_css_classes=(*classes)
       @column_css_classes = classes
       @column_css_classes.flatten! 
-   #  touch()
     end
     alias set_column_css_classes column_css_classes=
 

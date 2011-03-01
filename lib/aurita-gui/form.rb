@@ -728,8 +728,6 @@ module GUI
               @content << element
             else
               @script ||= ''
-              STDERR.puts "FORM.content: Element #{element.dom_id} => #{element.inspect}"
-              STDERR.puts "SCRIPT: #{element.script}"
               @script  << element.script
               @content << @field_decorator.new(element)
             end

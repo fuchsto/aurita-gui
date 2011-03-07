@@ -239,7 +239,7 @@ module GUI
       __getobj__.each { |c|
         if c.respond_to?(:script) then
           c_script = c.script
-          scr << c_script
+          scr << c_script.to_s if c_script
         end
       }
       scr << js_finalize()

@@ -78,6 +78,7 @@ module GUI
     end
 
     def value=(time)
+
       case time 
       when Hash then
         @value = time
@@ -110,6 +111,9 @@ module GUI
         }
       else
       end
+      @hour   ||= "00"
+      @minute ||= "00"
+      @second ||= "00"
     end
     alias set_value value=
 

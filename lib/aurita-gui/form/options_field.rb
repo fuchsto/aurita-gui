@@ -119,14 +119,13 @@ module GUI
       @exclude_values  ||= false
       @excluded_values   = []
 
-      set_options(params[:options]) if params[:options]
-
       if block_given? then
         yield.each { |option|
           add_option(option)
         }
       elsif params[:options] and !params[:option_labels] then
-        add_option(params[:options])
+     #  add_option(params[:options])
+        set_options(params[:options]) 
       end
       params.delete(:options)
       # Option fields don't have a value attribute themselves

@@ -225,7 +225,7 @@ module GUI
       @cells[column_index].value = cell_data
       touch()
     end
-    
+
     def string
       if touched? then
         @cells = []
